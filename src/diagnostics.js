@@ -1,0 +1,161 @@
+const vscode = require('vscode');
+const { parse } = require('selfies-js');
+const path = require('path');
+const fs = require('fs');
+
+/**
+ * Create a diagnostics provider for SELFIES files
+ * @returns {vscode.Disposable}
+ */
+function createDiagnosticsProvider() {
+    const diagnosticCollection = vscode.languages.createDiagnosticCollection('selfies');
+
+    // Update diagnostics when document changes
+    const updateDiagnostics = (document) => {
+        if (document.languageId !== 'selfies') {
+            return;
+        }
+
+        const text = document.getText();
+        const uri = document.uri;
+        const diagnostics = [];
+
+        try {
+            // Parse the document
+            const result = parse(text, {
+                filePath: uri.fsPath,
+                resolveImports: true,
+                importResolver: (importPath, currentFile) => {
+                    try {
+                        const basePath = path.dirname(currentFile);
+                        const fullPath = path.resolve(basePath, importPath);
+                        if (fs.existsSync(fullPath)) {
+                            return fs.readFileSync(fullPath, 'utf-8');
+                        }
+                        return null;
+                    } catch (err) {
+                        return null;
+                    }
+                }
+            });
+
+            // Convert selfies-js errors to VS Code diagnostics
+            if (result.errors && result.errors.length > 0) {
+                for (const error of result.errors) {
+                    const line = error.line !== undefined ? error.line : 0;
+                    const column = error.column !== undefined ? error.column : 0;
+                    const endColumn = error.endColumn !== undefined ? error.endColumn : column + 1;
+
+                    const range = new vscode.Range(
+                        new vscode.Position(line, column),
+                        new vscode.Position(line, endColumn)
+                    );
+
+                    const severity = getSeverity(error.type || error.severity);
+
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        error.message,
+                        severity
+                    );
+
+                    diagnostic.source = 'selfies';
+
+                    // Add error code if available
+                    if (error.code) {
+                        diagnostic.code = error.code;
+                    }
+
+                    diagnostics.push(diagnostic);
+                }
+            }
+
+            // Add warnings for chemical validity issues
+            if (result.warnings && result.warnings.length > 0) {
+                for (const warning of result.warnings) {
+                    const line = warning.line !== undefined ? warning.line : 0;
+                    const column = warning.column !== undefined ? warning.column : 0;
+                    const endColumn = warning.endColumn !== undefined ? warning.endColumn : column + 1;
+
+                    const range = new vscode.Range(
+                        new vscode.Position(line, column),
+                        new vscode.Position(line, endColumn)
+                    );
+
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        warning.message,
+                        vscode.DiagnosticSeverity.Warning
+                    );
+
+                    diagnostic.source = 'selfies';
+                    diagnostics.push(diagnostic);
+                }
+            }
+
+        } catch (err) {
+            // If parsing fails completely, show a general error
+            const diagnostic = new vscode.Diagnostic(
+                new vscode.Range(0, 0, 0, 1),
+                `Failed to parse SELFIES file: ${err.message}`,
+                vscode.DiagnosticSeverity.Error
+            );
+            diagnostic.source = 'selfies';
+            diagnostics.push(diagnostic);
+        }
+
+        diagnosticCollection.set(uri, diagnostics);
+    };
+
+    // Map error types to VS Code severity levels
+    const getSeverity = (type) => {
+        switch (type) {
+            case 'error':
+            case 'syntax':
+            case 'undefined':
+            case 'circular':
+            case 'redefinition':
+                return vscode.DiagnosticSeverity.Error;
+            case 'warning':
+            case 'chemistry':
+                return vscode.DiagnosticSeverity.Warning;
+            case 'info':
+                return vscode.DiagnosticSeverity.Information;
+            case 'hint':
+                return vscode.DiagnosticSeverity.Hint;
+            default:
+                return vscode.DiagnosticSeverity.Error;
+        }
+    };
+
+    // Listen for document changes
+    const documentChangeListener = vscode.workspace.onDidChangeTextDocument((event) => {
+        updateDiagnostics(event.document);
+    });
+
+    // Listen for document open
+    const documentOpenListener = vscode.workspace.onDidOpenTextDocument((document) => {
+        updateDiagnostics(document);
+    });
+
+    // Listen for document close
+    const documentCloseListener = vscode.workspace.onDidCloseTextDocument((document) => {
+        diagnosticCollection.delete(document.uri);
+    });
+
+    // Update all currently open documents
+    vscode.workspace.textDocuments.forEach(updateDiagnostics);
+
+    return {
+        dispose: () => {
+            diagnosticCollection.dispose();
+            documentChangeListener.dispose();
+            documentOpenListener.dispose();
+            documentCloseListener.dispose();
+        }
+    };
+}
+
+module.exports = {
+    createDiagnosticsProvider
+};

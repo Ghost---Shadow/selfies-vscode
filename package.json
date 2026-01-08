@@ -1,0 +1,102 @@
+{
+  "name": "selfies-lang",
+  "displayName": "SELFIES Language Support",
+  "description": "Language support for SELFIES molecular composition DSL",
+  "version": "0.1.0",
+  "publisher": "selfies",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "selfies",
+    "chemistry",
+    "molecules",
+    "smiles"
+  ],
+  "activationEvents": [
+    "onLanguage:selfies"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "selfies",
+        "aliases": [
+          "SELFIES",
+          "selfies"
+        ],
+        "extensions": [
+          ".selfies"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/file-icon-light.svg",
+          "dark": "./icons/file-icon-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "selfies",
+        "scopeName": "source.selfies",
+        "path": "./syntaxes/selfies.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "selfies.showMolecule",
+        "title": "SELFIES: Show Molecular Structure"
+      },
+      {
+        "command": "selfies.togglePreview",
+        "title": "SELFIES: Toggle Preview Panel"
+      }
+    ],
+    "configuration": {
+      "title": "SELFIES",
+      "properties": {
+        "selfies.previewOnCursorMove": {
+          "type": "boolean",
+          "default": true,
+          "description": "Update preview when cursor moves to a different line"
+        },
+        "selfies.autoOpenPreview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically open preview panel when opening .selfies files"
+        },
+        "selfies.renderingEngine": {
+          "type": "string",
+          "enum": [
+            "smiles-drawer",
+            "rdkit"
+          ],
+          "default": "smiles-drawer",
+          "description": "Molecule rendering engine"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "package": "node ./build.js",
+    "watch": "node ./build.js --watch",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "selfies-js": "file:../selfies-js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.56.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/selfies-lang"
+  },
+  "license": "MIT"
+}
