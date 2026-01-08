@@ -1,6 +1,19 @@
 .vscode/**
 .vscode-test/**
-node_modules/**
 *.vsix
 .gitignore
 .eslintrc.json
+
+# Exclude devDependencies but keep production dependencies
+node_modules/@types/**
+node_modules/@vscode/**
+node_modules/eslint/**
+
+# Exclude optional peer dependencies (RDKit is huge and optional)
+node_modules/@rdkit/**
+
+# Development files
+*.bat
+*.sh
+SETUP.md
+OVERVIEW.md

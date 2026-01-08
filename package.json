@@ -87,7 +87,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "selfies-js": "file:../selfies-js"
+    "selfies-js": "^0.1.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
