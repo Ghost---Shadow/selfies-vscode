@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { parse } = require('selfies-js');
+const { parse, loadWithImports } = require('selfies-js');
 const path = require('path');
 const fs = require('fs');
 
@@ -21,23 +21,8 @@ function createDiagnosticsProvider() {
         const diagnostics = [];
 
         try {
-            // Parse the document
-            const result = parse(text, {
-                filePath: uri.fsPath,
-                resolveImports: true,
-                importResolver: (importPath, currentFile) => {
-                    try {
-                        const basePath = path.dirname(currentFile);
-                        const fullPath = path.resolve(basePath, importPath);
-                        if (fs.existsSync(fullPath)) {
-                            return fs.readFileSync(fullPath, 'utf-8');
-                        }
-                        return null;
-                    } catch (err) {
-                        return null;
-                    }
-                }
-            });
+            // Parse the document with imports support
+            const result = loadWithImports(text, uri.fsPath);
 
             // Convert selfies-js errors to VS Code diagnostics
             if (result.errors && result.errors.length > 0) {

@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { parse, resolve, decode, getMolecularWeight, getFormula } = require('selfies-js');
+const { loadWithImports, resolve, decode, getMolecularWeight, getFormula } = require('selfies-js');
 const path = require('path');
 const fs = require('fs');
 
@@ -89,22 +89,7 @@ class LineTracker {
             // Parse the document if not already parsed
             if (!this._parseResult) {
                 const text = this._currentDocument.getText();
-                this._parseResult = parse(text, {
-                    filePath: this._currentDocument.uri.fsPath,
-                    resolveImports: true,
-                    importResolver: (importPath, currentFile) => {
-                        try {
-                            const basePath = path.dirname(currentFile);
-                            const fullPath = path.resolve(basePath, importPath);
-                            if (fs.existsSync(fullPath)) {
-                                return fs.readFileSync(fullPath, 'utf-8');
-                            }
-                            return null;
-                        } catch (err) {
-                            return null;
-                        }
-                    }
-                });
+                this._parseResult = loadWithImports(text, this._currentDocument.uri.fsPath);
             }
 
             const lineText = this._currentDocument.lineAt(this._currentLine).text.trim();
