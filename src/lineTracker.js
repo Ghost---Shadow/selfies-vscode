@@ -116,8 +116,10 @@ class LineTracker {
             }
 
             // Find the definition on this line
-            const definitions = this._parseResult.definitions || [];
-            const definition = definitions.find(def => def.line === this._currentLine);
+            // Note: VS Code uses 0-based line numbers, parser uses 1-based
+            const definitions = this._parseResult.definitions || new Map();
+            const definitionsArray = Array.from(definitions.values());
+            const definition = definitionsArray.find(def => def.line === this._currentLine + 1);
 
             if (!definition) {
                 this._onDidChangeCurrentLine.fire(null);
@@ -125,23 +127,29 @@ class LineTracker {
             }
 
             // Resolve the definition to get the full SELFIES string
-            const resolved = resolve(definition.name, this._parseResult.symbolTable);
+            let selfies = null;
+            let smiles = null;
+            let error = null;
 
-            if (!resolved || !resolved.selfies) {
+            try {
+                selfies = resolve(this._parseResult, definition.name, { validateValence: false });
+            } catch (err) {
+                error = err.message;
+            }
+
+            if (!selfies) {
                 this._onDidChangeCurrentLine.fire({
                     line: this._currentLine,
                     name: definition.name,
-                    expression: definition.expression,
-                    error: 'Could not resolve definition'
+                    expression: definition.tokens ? definition.tokens.join('') : '',
+                    error: error || 'Could not resolve definition'
                 });
                 return;
             }
 
             // Decode to SMILES
-            let smiles = null;
-            let error = null;
             try {
-                smiles = decode(resolved.selfies);
+                smiles = decode(selfies);
             } catch (err) {
                 error = err.message;
             }
@@ -150,10 +158,10 @@ class LineTracker {
             let molecularWeight = null;
             let formula = null;
 
-            if (smiles) {
+            if (selfies && !error) {
                 try {
-                    molecularWeight = getMolecularWeight(resolved.selfies);
-                    formula = getFormula(resolved.selfies);
+                    molecularWeight = getMolecularWeight(selfies);
+                    formula = getFormula(selfies);
                 } catch (err) {
                     // Properties might not be available
                 }
@@ -162,8 +170,8 @@ class LineTracker {
             const lineInfo = {
                 line: this._currentLine,
                 name: definition.name,
-                expression: definition.expression,
-                selfies: resolved.selfies,
+                expression: definition.tokens ? definition.tokens.join('') : '',
+                selfies: selfies,
                 smiles: smiles,
                 molecularWeight: molecularWeight,
                 formula: formula,
