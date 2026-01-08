@@ -82,34 +82,29 @@
     "tokens": {
       "patterns": [
         {
-          "name": "entity.name.type.reference.selfies",
-          "match": "\\[[a-z_][a-zA-Z0-9_]*\\]",
-          "comment": "Named references (lowercase first letter)"
-        },
-        {
-          "name": "support.type.branch.selfies",
-          "match": "\\[(?:=)?Branch[1-3]\\]",
-          "comment": "Branch tokens"
-        },
-        {
-          "name": "support.type.ring.selfies",
+          "name": "keyword.control.ring.selfies",
           "match": "\\[(?:=)?Ring[1-3]\\]",
-          "comment": "Ring tokens"
+          "comment": "Ring closure tokens - special syntax"
         },
         {
-          "name": "support.type.bond.selfies",
-          "match": "\\[(?:=|#|\\/|\\\\)([A-Z][a-z]?|[BCNOPSFIbcnosp])\\]",
-          "comment": "Atoms with bond modifiers"
+          "name": "keyword.control.branch.selfies",
+          "match": "\\[(?:=)?Branch[1-3]\\]",
+          "comment": "Branch tokens - special syntax"
         },
         {
-          "name": "entity.name.tag.atom.selfies",
-          "match": "\\[([A-Z][a-z]?|[BCNOPSFIbcnosp])\\]",
-          "comment": "Atoms without bond modifiers"
+          "name": "constant.language.atom.selfies",
+          "match": "\\[(?:=|#|\\/|\\\\)?([A-Z][a-z]?|[BCNOPSFIbcnosp])\\]",
+          "comment": "Chemical elements with or without bond modifiers"
         },
         {
-          "name": "entity.name.tag.expl.selfies",
+          "name": "constant.language.explicit.selfies",
           "match": "\\[expl[A-Z][a-z]?\\]",
           "comment": "Explicit hydrogen notation"
+        },
+        {
+          "name": "variable.other.reference.selfies",
+          "match": "\\[[a-z_][a-zA-Z0-9_]*\\]",
+          "comment": "Variable references (lowercase first letter)"
         },
         {
           "name": "invalid.illegal.token.selfies",
