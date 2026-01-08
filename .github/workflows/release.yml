@@ -41,5 +41,3 @@ jobs:
 
     - name: Publish to VS Code Marketplace
       run: vsce publish -p ${{ secrets.VSCE_PAT }}
-      if: secrets.VSCE_PAT != ''
-      continue-on-error: true
