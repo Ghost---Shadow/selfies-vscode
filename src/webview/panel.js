@@ -40,13 +40,19 @@ class PreviewPanel {
 
         // Handle messages from webview
         this._panel.webview.onDidReceiveMessage(
-            message => {
+            async message => {
                 switch (message.command) {
                     case 'error':
                         vscode.window.showErrorMessage(message.text);
                         break;
                     case 'info':
                         vscode.window.showInformationMessage(message.text);
+                        break;
+                    case 'saveSVG':
+                        await this._saveSVG(message.svgData, message.fileName);
+                        break;
+                    case 'savePNG':
+                        await this._savePNG(message.pngData, message.fileName);
                         break;
                 }
             },
@@ -114,6 +120,51 @@ class PreviewPanel {
 
         const html = fs.readFileSync(rendererPath, 'utf-8');
         return html;
+    }
+
+    /**
+     * Save SVG file
+     */
+    async _saveSVG(svgData, fileName) {
+        try {
+            const uri = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file(fileName),
+                filters: {
+                    'SVG Files': ['svg']
+                }
+            });
+
+            if (uri) {
+                await vscode.workspace.fs.writeFile(uri, Buffer.from(svgData, 'utf-8'));
+                vscode.window.showInformationMessage(`SVG saved to ${uri.fsPath}`);
+            }
+        } catch (err) {
+            vscode.window.showErrorMessage(`Failed to save SVG: ${err.message}`);
+        }
+    }
+
+    /**
+     * Save PNG file
+     */
+    async _savePNG(pngData, fileName) {
+        try {
+            const uri = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file(fileName),
+                filters: {
+                    'PNG Files': ['png']
+                }
+            });
+
+            if (uri) {
+                // Convert data URL to buffer
+                const base64Data = pngData.replace(/^data:image\/png;base64,/, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+                await vscode.workspace.fs.writeFile(uri, buffer);
+                vscode.window.showInformationMessage(`PNG saved to ${uri.fsPath}`);
+            }
+        } catch (err) {
+            vscode.window.showErrorMessage(`Failed to save PNG: ${err.message}`);
+        }
     }
 }
 
