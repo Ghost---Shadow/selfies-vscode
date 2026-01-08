@@ -67,7 +67,10 @@ function activate(context) {
         if (config.get('autoOpenPreview', true)) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document.languageId === 'selfies') {
-                vscode.commands.executeCommand('selfies.showMolecule');
+                // Only auto-open if panel doesn't exist
+                if (!previewPanel) {
+                    vscode.commands.executeCommand('selfies.showMolecule');
+                }
             }
         }
     };

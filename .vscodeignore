@@ -4,13 +4,15 @@
 .gitignore
 .eslintrc.json
 
-# Exclude devDependencies but keep production dependencies
-node_modules/@types/**
-node_modules/@vscode/**
-node_modules/eslint/**
+# Source files (we use bundled dist/ instead)
+src/**
 
-# Exclude optional peer dependencies (RDKit is huge and optional)
-node_modules/@rdkit/**
+# All node_modules (bundled by esbuild)
+node_modules/**
+
+# Build tools
+esbuild.js
+build.js
 
 # Development files
 *.bat

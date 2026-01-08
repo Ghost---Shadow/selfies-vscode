@@ -26,7 +26,7 @@ class PreviewPanel {
                 enableScripts: true,
                 retainContextWhenHidden: true,
                 localResourceRoots: [
-                    vscode.Uri.joinPath(this._extensionUri, 'src', 'webview')
+                    vscode.Uri.joinPath(this._extensionUri, 'resources')
                 ]
             }
         );
@@ -113,8 +113,7 @@ class PreviewPanel {
     _getHtmlContent() {
         const rendererPath = path.join(
             this._extensionUri.fsPath,
-            'src',
-            'webview',
+            'resources',
             'renderer.html'
         );
 

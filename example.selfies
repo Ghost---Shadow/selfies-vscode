@@ -1,17 +1,19 @@
 # SELFIES Language Example
 # This file demonstrates the SELFIES DSL syntax
 
+# This is work in progress, some of these might be wrong
+
 # Basic alkyl groups
 [methyl] = [C]
-[ethyl] = [C][C]
+[ethyl] = [C][C] # Known bug
 [propyl] = [C][C][C]
 [butyl] = [C][C][C][C]
 
 # Functional groups
-[hydroxyl] = [O][H]
-[amino] = [N][H][Branch1][C][H]
+[hydroxyl] = [O]
+[amino] = [N][Branch1][C]
 [carbonyl] = [C][=O]
-[carboxyl] = [carbonyl][O][H]
+[carboxyl] = [carbonyl][O]
 
 # Simple molecules
 [methanol] = [methyl][hydroxyl]
@@ -28,8 +30,8 @@
 [ethylamine] = [ethyl][amino]
 
 # More complex molecules
-[acetone] = [methyl][carbonyl][C]
-[acetaldehyde] = [methyl][carbonyl][H]
+[acetone] = [C][C][Branch1][O][C][C]
+[acetaldehyde] = [methyl][carbonyl]
 
 # Aromatic compounds
 [benzene] = [C][=C][C][=C][C][=C][Ring1][=Branch1]
