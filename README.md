@@ -1,5 +1,9 @@
 # SELFIES Language Extension for VS Code
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Ghost---Shadow/selfies-vscode/main/illustration.png" alt="SELFIES Extension Screenshot" width="800"/>
+</p>
+
 Language support for SELFIES (SELF-referencIng Embedded Strings) - a declarative DSL for composing molecules using SELFIES notation.
 
 ## Features
@@ -15,10 +19,12 @@ Language support for SELFIES (SELF-referencIng Embedded Strings) - a declarative
   - Import resolution
 
 - **Live Preview** - Visual feedback as you type
-  - 2D molecular structure rendering
+  - 2D molecular structure rendering with white background
   - Molecular weight calculation
   - Molecular formula
   - SMILES output
+  - **Download as SVG** - Export molecular structures as vector graphics
+  - **Download as PNG** - Export molecular structures as raster images
 
 - **Import Support** - Multi-file projects with three import syntaxes
   - `import "./file.selfies"` (simple)
@@ -105,6 +111,39 @@ npm run watch
 npm run package
 ```
 
+## Citation
+
+If you use SELFIES in your research, please cite the original paper:
+
+```bibtex
+@article{krenn2020self,
+  title={Self-referencing embedded strings (SELFIES): A 100% robust molecular string representation},
+  author={Krenn, Mario and H{\"a}se, Florian and Nigam, AkshatKumar and Friederich, Pascal and Aspuru-Guzik, Al{\'a}n},
+  journal={Machine Learning: Science and Technology},
+  volume={1},
+  number={4},
+  pages={045024},
+  year={2020},
+  publisher={IOP Publishing}
+}
+```
+
+**Paper**: Krenn, M., Häse, F., Nigam, A., Friederich, P., & Aspuru-Guzik, A. (2020). Self-referencing embedded strings (SELFIES): A 100% robust molecular string representation. *Machine Learning: Science and Technology*, 1(4), 045024.
+
+**DOI**: https://doi.org/10.1088/2632-2153/aba947
+
+## Acknowledgments
+
+This extension is built on top of:
+- [SELFIES](https://github.com/aspuru-guzik-group/selfies) - Original Python implementation by the Aspuru-Guzik group
+- [selfies-js](https://github.com/Ghost---Shadow/selfies-js) - Pure JavaScript implementation
+- [SmilesDrawer](https://github.com/reymond-group/smilesDrawer) - Molecular structure rendering
+- [RDKit](https://www.rdkit.org/) - Chemistry toolkit
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests at https://github.com/Ghost---Shadow/selfies-vscode
+
 ## License
 
-MIT
+MIT - Copyright (c) 2026 Souradeep Nanda

@@ -17,6 +17,17 @@ All notable changes to the SELFIES Language Extension will be documented in this
 
 ### Features
 - Integration with `selfies-js` for parsing and chemistry logic
-- 2D structure rendering using smiles-drawer
+- 2D structure rendering using smiles-drawer with white background
 - Cursor tracking for real-time updates
 - Support for comments and multi-file projects
+- Export functionality:
+  - Download molecular structures as SVG (vector format)
+  - Download molecular structures as PNG (raster format with white background)
+- Enhanced syntax highlighting:
+  - Chemical elements colored consistently (with or without bond modifiers)
+  - Variable references colored distinctly from elements
+  - Special tokens (Ring, Branch) highlighted as keywords
+
+---
+
+For more information, visit the [GitHub repository](https://github.com/Ghost---Shadow/selfies-vscode).

@@ -1,21 +1,30 @@
 {
   "name": "selfies-lang",
   "displayName": "SELFIES Language Support",
-  "description": "Language support for SELFIES molecular composition DSL",
+  "description": "Complete language support for SELFIES molecular notation with DSL, syntax highlighting, live preview, and molecular structure visualization",
   "version": "0.1.0",
-  "publisher": "selfies",
+  "publisher": "souradeepnanda",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Visualization",
+    "Other"
   ],
   "keywords": [
     "selfies",
     "chemistry",
     "molecules",
-    "smiles"
+    "smiles",
+    "cheminformatics",
+    "molecular-design",
+    "drug-discovery",
+    "bioinformatics",
+    "molecular-structure",
+    "visualization"
   ],
+  "icon": "icon.png",
   "activationEvents": [
     "onLanguage:selfies",
     "onCommand:selfies.showMolecule",
@@ -95,11 +104,16 @@
   "devDependencies": {
     "@types/vscode": "^1.85.0",
     "@vscode/test-electron": "^2.3.8",
-    "eslint": "^8.56.0"
+    "eslint": "^8.56.0",
+    "sharp": "^0.34.5"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/selfies-lang"
+    "url": "https://github.com/Ghost---Shadow/selfies-vscode"
   },
+  "bugs": {
+    "url": "https://github.com/Ghost---Shadow/selfies-vscode/issues"
+  },
+  "homepage": "https://github.com/Ghost---Shadow/selfies-vscode#readme",
   "license": "MIT"
 }
