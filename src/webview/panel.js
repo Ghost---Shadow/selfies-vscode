@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { generateSVG } from '../rdkitRenderer';
 
 /**
  * Manages the webview panel for molecular structure visualization
@@ -66,9 +67,26 @@ class PreviewPanel {
     /**
      * Update the preview with new molecule data
      */
-    update(lineInfo) {
+    async update(lineInfo) {
         if (!this._panel) {
             return;
+        }
+
+        // Generate SVG using RDKit if we have SMILES
+        if (lineInfo && lineInfo.smiles && !lineInfo.error) {
+            try {
+                console.log('Generating SVG with RDKit for:', lineInfo.smiles);
+                const svg = await generateSVG(lineInfo.smiles, {
+                    width: 500,
+                    height: 300,
+                    addStereoAnnotation: true
+                });
+                lineInfo.svg = svg;
+                console.log('✓ RDKit SVG generated successfully');
+            } catch (err) {
+                console.error('RDKit rendering failed:', err);
+                lineInfo.rdkitError = err.message;
+            }
         }
 
         this._panel.webview.postMessage({

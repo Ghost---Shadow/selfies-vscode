@@ -1,0 +1,84 @@
+'use strict';
+
+import initRDKitModule from '@rdkit/rdkit';
+
+let RDKitModule = null;
+
+/**
+ * Initialize RDKit module
+ */
+export async function initRDKit() {
+    if (!RDKitModule) {
+        try {
+            RDKitModule = await initRDKitModule();
+            console.log('✓ RDKit initialized successfully');
+        } catch (err) {
+            console.error('Failed to initialize RDKit:', err);
+            throw err;
+        }
+    }
+    return RDKitModule;
+}
+
+/**
+ * Generate SVG from SMILES using RDKit
+ * @param {string} smiles - SMILES string
+ * @param {object} options - Rendering options
+ * @returns {string} SVG string
+ */
+export async function generateSVG(smiles, options = {}) {
+    const rdkit = await initRDKit();
+
+    const {
+        width = 500,
+        height = 300,
+        addStereoAnnotation = true
+    } = options;
+
+    let mol = null;
+    try {
+        // Create molecule from SMILES
+        mol = rdkit.get_mol(smiles);
+
+        if (!mol || !mol.is_valid()) {
+            throw new Error('Invalid molecule');
+        }
+
+        // Generate SVG
+        const svg = mol.get_svg_with_highlights(JSON.stringify({
+            width,
+            height,
+            addStereoAnnotation
+        }));
+
+        return svg;
+    } catch (err) {
+        throw new Error(`Failed to generate SVG: ${err.message}`);
+    } finally {
+        // Clean up molecule object
+        if (mol) {
+            mol.delete();
+        }
+    }
+}
+
+/**
+ * Check if SMILES is valid using RDKit
+ * @param {string} smiles - SMILES string
+ * @returns {boolean}
+ */
+export async function isValidSMILES(smiles) {
+    const rdkit = await initRDKit();
+
+    let mol = null;
+    try {
+        mol = rdkit.get_mol(smiles);
+        return mol && mol.is_valid();
+    } catch {
+        return false;
+    } finally {
+        if (mol) {
+            mol.delete();
+        }
+    }
+}

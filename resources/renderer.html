@@ -177,7 +177,15 @@
                 </div>
             `;
 
-            if (smiles) {
+            if (lineInfo.svg) {
+                // Use RDKit-generated SVG directly
+                html += `
+                    <div class="structure-container" id="structure-wrapper">
+                        ${lineInfo.svg}
+                    </div>
+                `;
+            } else if (smiles) {
+                // Fallback to smiles-drawer
                 html += `
                     <div class="structure-container" id="structure-wrapper">
                         <svg id="structure" width="500" height="300"></svg>
@@ -233,8 +241,8 @@
 
             content.innerHTML = html;
 
-            // Draw the structure after DOM update
-            if (smiles) {
+            // Draw the structure after DOM update (only if using smiles-drawer fallback)
+            if (smiles && !lineInfo.svg) {
                 // Wait for DOM to update
                 setTimeout(() => {
                     // Ensure SmilesDrawer is initialized
@@ -280,7 +288,8 @@
 
         // Download SVG function
         function downloadSVG() {
-            const svgElement = document.getElementById('structure');
+            // Try to find SVG element (could be from RDKit or smiles-drawer)
+            const svgElement = document.querySelector('#structure-wrapper svg') || document.getElementById('structure');
             if (!svgElement) {
                 console.error('SVG element not found');
                 return;
@@ -302,7 +311,8 @@
 
         // Download PNG function
         function downloadPNG() {
-            const svgElement = document.getElementById('structure');
+            // Try to find SVG element (could be from RDKit or smiles-drawer)
+            const svgElement = document.querySelector('#structure-wrapper svg') || document.getElementById('structure');
             if (!svgElement) {
                 console.error('SVG element not found');
                 return;

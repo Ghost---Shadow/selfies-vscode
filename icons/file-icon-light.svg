@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Molecule icon for light theme -->
+  <g fill="#424242">
+    <!-- Atoms (circles) -->
+    <circle cx="4" cy="4" r="2"/>
+    <circle cx="12" cy="4" r="2"/>
+    <circle cx="8" cy="12" r="2"/>
+
+    <!-- Bonds (lines) -->
+    <line x1="5.5" y1="5" x2="7" y2="10.5" stroke="#424242" stroke-width="1.5"/>
+    <line x1="10.5" y1="5" x2="9" y2="10.5" stroke="#424242" stroke-width="1.5"/>
+    <line x1="5.5" y1="4" x2="10.5" y2="4" stroke="#424242" stroke-width="1.5"/>
+  </g>
+</svg>

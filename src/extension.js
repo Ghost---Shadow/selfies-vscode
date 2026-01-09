@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { createDiagnosticsProvider } from './diagnostics';
 import { LineTracker } from './lineTracker';
 import { PreviewPanel } from './webview/panel';
+import { initRDKit } from './rdkitRenderer';
 
 /**
  * Activate the SELFIES extension
@@ -11,6 +12,25 @@ import { PreviewPanel } from './webview/panel';
  */
 export function activate(context) {
     console.log('SELFIES extension is now active');
+    console.log('Initial subscriptions:', context.subscriptions.length);
+
+    // Initialize RDKit asynchronously
+    initRDKit().then(() => {
+        console.log('✓ RDKit ready for molecule rendering');
+    }).catch(err => {
+        console.error('Failed to initialize RDKit:', err);
+        vscode.window.showWarningMessage('SELFIES: RDKit initialization failed, using fallback renderer');
+    });
+
+    // Track subscriptions for debugging
+    const originalPush = context.subscriptions.push;
+    context.subscriptions.push = function(...items) {
+        items.forEach(item => {
+            const name = item?.constructor?.name || 'Unknown';
+            console.log('→ Adding subscription:', name);
+        });
+        return originalPush.apply(this, items);
+    };
 
     // Create diagnostics provider
     const diagnosticsProvider = createDiagnosticsProvider();
@@ -100,6 +120,37 @@ export function activate(context) {
     context.subscriptions.push(togglePreviewCommand);
     context.subscriptions.push(editorChangeListener);
     context.subscriptions.push(cursorChangeListener);
+
+    // Final summary
+    console.log('✓ SELFIES extension activated successfully');
+    console.log('✓ Total subscriptions:', context.subscriptions.length);
+    console.log('✓ Registered commands: selfies.showMolecule, selfies.togglePreview');
+
+    // Sanity check: Verify commands are registered
+    vscode.commands.getCommands(true).then(commands => {
+        const selfiesCommands = commands.filter(cmd => cmd.startsWith('selfies.'));
+        console.log('=== SANITY CHECK ===');
+        console.log('Commands starting with "selfies.":', selfiesCommands);
+
+        if (selfiesCommands.includes('selfies.togglePreview')) {
+            console.log('✓ selfies.togglePreview is registered');
+
+            // Try to invoke the command
+            console.log('Attempting to invoke selfies.togglePreview...');
+            vscode.commands.executeCommand('selfies.togglePreview').then(
+                () => console.log('✓ Command executed successfully'),
+                (err) => console.error('✗ Command execution failed:', err)
+            );
+        } else {
+            console.error('✗ selfies.togglePreview NOT FOUND in registered commands!');
+        }
+
+        if (selfiesCommands.includes('selfies.showMolecule')) {
+            console.log('✓ selfies.showMolecule is registered');
+        } else {
+            console.error('✗ selfies.showMolecule NOT FOUND in registered commands!');
+        }
+    });
 }
 
 /**
