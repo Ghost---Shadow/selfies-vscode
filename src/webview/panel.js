@@ -75,14 +75,12 @@ class PreviewPanel {
         // Generate SVG using RDKit if we have SMILES
         if (lineInfo && lineInfo.smiles && !lineInfo.error) {
             try {
-                console.log('Generating SVG with RDKit for:', lineInfo.smiles);
                 const svg = await generateSVG(lineInfo.smiles, {
                     width: 500,
                     height: 300,
                     addStereoAnnotation: true
                 });
                 lineInfo.svg = svg;
-                console.log('✓ RDKit SVG generated successfully');
             } catch (err) {
                 console.error('RDKit rendering failed:', err);
                 lineInfo.rdkitError = err.message;

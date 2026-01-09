@@ -128,7 +128,6 @@
                         fontSizeLarge: 14,
                         fontSizeSmall: 10
                     });
-                    console.log('SmilesDrawer initialized successfully');
                 } catch (err) {
                     console.error('Failed to initialize SmilesDrawer:', err);
                 }
@@ -149,11 +148,6 @@
         function updateView(lineInfo) {
             const content = document.getElementById('content');
 
-            console.log('=== updateView called ===');
-            console.log('lineInfo:', lineInfo);
-            console.log('Has RDKit SVG:', !!lineInfo?.svg);
-            console.log('Has SMILES:', !!lineInfo?.smiles);
-
             if (!lineInfo || lineInfo.error) {
                 content.innerHTML = `
                     <div class="error">
@@ -164,8 +158,6 @@
             }
 
             const { name, expression, selfies, smiles, molecularWeight, formula } = lineInfo;
-
-            console.log('SMILES to render:', smiles);
 
             let html = `
                 <div class="header">
@@ -182,7 +174,6 @@
 
             if (lineInfo.svg) {
                 // Use RDKit-generated SVG directly
-                console.log('✓ Using RDKit-generated SVG');
                 html += `
                     <div class="structure-container" id="structure-wrapper">
                         ${lineInfo.svg}
@@ -190,7 +181,6 @@
                 `;
             } else if (smiles) {
                 // Fallback to smiles-drawer
-                console.log('⚠ Falling back to smiles-drawer (RDKit not available)');
                 html += `
                     <div class="structure-container" id="structure-wrapper">
                         <svg id="structure" width="500" height="300"></svg>
@@ -258,15 +248,9 @@
                     if (smilesDrawer) {
                         try {
                             const svgElement = document.getElementById('structure');
-                            console.log('SVG element:', svgElement);
-                            console.log('SVG element dimensions:', svgElement?.getAttribute('width'), svgElement?.getAttribute('height'));
                             if (svgElement) {
-                                console.log('Attempting to draw SMILES:', smiles);
                                 SmilesDrawer.parse(smiles, function(tree) {
-                                    console.log('Parse successful, drawing...');
                                     smilesDrawer.draw(tree, 'structure', 'light', false);
-                                    console.log('Molecule drawn successfully');
-                                    console.log('SVG after draw:', document.getElementById('structure'));
                                 }, function(err) {
                                     console.error('Error parsing SMILES:', err);
                                     const wrapper = document.getElementById('structure-wrapper');
@@ -278,14 +262,10 @@
                                         text: 'Error drawing molecular structure: ' + err
                                     });
                                 });
-                            } else {
-                                console.error('SVG element not found');
                             }
                         } catch (err) {
                             console.error('Error drawing structure:', err);
                         }
-                    } else {
-                        console.error('SmilesDrawer not available');
                     }
                 }, 10);
             }
@@ -310,8 +290,6 @@
                 svgData: svgData,
                 fileName: `${moleculeName}.svg`
             });
-
-            console.log('SVG save requested');
         }
 
         // Download PNG function
@@ -355,8 +333,6 @@
                     pngData: pngDataUrl,
                     fileName: `${moleculeName}.png`
                 });
-
-                console.log('PNG save requested');
             };
 
             img.onerror = function(err) {

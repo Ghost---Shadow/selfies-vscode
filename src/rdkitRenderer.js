@@ -9,13 +9,7 @@ let RDKitModule = null;
  */
 export async function initRDKit() {
     if (!RDKitModule) {
-        try {
-            RDKitModule = await initRDKitModule();
-            console.log('✓ RDKit initialized successfully');
-        } catch (err) {
-            console.error('Failed to initialize RDKit:', err);
-            throw err;
-        }
+        RDKitModule = await initRDKitModule();
     }
     return RDKitModule;
 }
