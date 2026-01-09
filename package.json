@@ -25,6 +25,11 @@
     "visualization"
   ],
   "icon": "icon.png",
+  "activationEvents": [
+    "onLanguage:selfies",
+    "onCommand:selfies.showMolecule",
+    "onCommand:selfies.togglePreview"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "languages": [
