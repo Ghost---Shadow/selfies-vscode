@@ -8,13 +8,19 @@
 
 Define molecular fragments, compose them into complex structures, and watch the visualization update live as you navigate your code.
 
-## Why?
+## Why SELFIES?
+
+SELFIES was designed for machine learning — every string is a valid molecule, eliminating syntax errors in generative models. The DSL extends that principle: named fragments are easier for LLMs to compose correctly than raw atom strings, and undefined references fail loudly instead of producing silent errors.
+
+## The Problem
 
 Pharmaceutical SMILES are write-only:
 
 ```
 CC(=O)Nc1ccc(O)cc1
 ```
+
+And when LLMs generate SMILES, they hallucinate invalid structures. SELFIES fixes the validity problem. The DSL fixes the readability problem.
 
 With this extension, you write readable, composable definitions:
 
