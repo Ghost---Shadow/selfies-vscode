@@ -2,6 +2,23 @@
 
 All notable changes to the SELFIES Language Extension will be documented in this file.
 
+## [0.2.0] - 2026-01-09
+
+### Fixed
+- **Critical: Fixed line number misalignment with comments and imports**
+  - Preview panel now correctly displays molecules when files have comments at the top
+  - Import statements no longer cause cursor position to be misaligned with definitions
+  - Molecular structure preview now updates correctly regardless of file structure
+  - This fix is in the underlying `selfies-js` package (upgraded to v0.2.0)
+
+### Changed
+- Updated dependency `selfies-js` from `^0.1.3` to `^0.2.0`
+
+### Technical Details
+- The issue was caused by import lines being removed from the source before parsing, which shifted all line numbers
+- Now import lines are replaced with blank lines to preserve original line numbering
+- See [FIX-LINE-NUMBERS.md](../FIX-LINE-NUMBERS.md) for detailed technical explanation
+
 ## [0.1.0] - 2026-01-08
 
 ### Added
