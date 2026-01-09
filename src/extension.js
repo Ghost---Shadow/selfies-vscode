@@ -1,13 +1,15 @@
-const vscode = require('vscode');
-const { createDiagnosticsProvider } = require('./diagnostics');
-const { LineTracker } = require('./lineTracker');
-const { PreviewPanel } = require('./webview/panel');
+'use strict';
+
+import * as vscode from 'vscode';
+import { createDiagnosticsProvider } from './diagnostics';
+import { LineTracker } from './lineTracker';
+import { PreviewPanel } from './webview/panel';
 
 /**
  * Activate the SELFIES extension
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
+export function activate(context) {
     console.log('SELFIES extension is now active');
 
     // Create diagnostics provider
@@ -52,6 +54,7 @@ function activate(context) {
     const togglePreviewCommand = vscode.commands.registerCommand(
         'selfies.togglePreview',
         () => {
+            console.log('togglePreview command invoked!');
             if (previewPanel) {
                 previewPanel.dispose();
                 previewPanel = null;
@@ -93,22 +96,15 @@ function activate(context) {
     // Auto-open preview for currently active editor
     autoOpenPreview();
 
-    context.subscriptions.push(
-        showMoleculeCommand,
-        togglePreviewCommand,
-        editorChangeListener,
-        cursorChangeListener
-    );
+    context.subscriptions.push(showMoleculeCommand);
+    context.subscriptions.push(togglePreviewCommand);
+    context.subscriptions.push(editorChangeListener);
+    context.subscriptions.push(cursorChangeListener);
 }
 
 /**
  * Deactivate the extension
  */
-function deactivate() {
+export function deactivate() {
     // Cleanup is handled by dispose methods
 }
-
-module.exports = {
-    activate,
-    deactivate
-};

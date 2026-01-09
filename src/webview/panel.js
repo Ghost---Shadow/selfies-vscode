@@ -1,6 +1,8 @@
-const vscode = require('vscode');
-const path = require('path');
-const fs = require('fs');
+'use strict';
+
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Manages the webview panel for molecular structure visualization
@@ -167,6 +169,4 @@ class PreviewPanel {
     }
 }
 
-module.exports = {
-    PreviewPanel
-};
+export { PreviewPanel };

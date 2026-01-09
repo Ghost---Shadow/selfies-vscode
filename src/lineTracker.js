@@ -1,7 +1,9 @@
-const vscode = require('vscode');
-const { loadWithImports, resolve, decode, getMolecularWeight, getFormula } = require('selfies-js');
-const path = require('path');
-const fs = require('fs');
+'use strict';
+
+import * as vscode from 'vscode';
+import { loadWithImports, resolve, decode, getMolecularWeight, getFormula } from 'selfies-js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Tracks the current cursor position and provides information about the current line
@@ -191,6 +193,4 @@ class LineTracker {
     }
 }
 
-module.exports = {
-    LineTracker
-};
+export { LineTracker };

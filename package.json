@@ -2,7 +2,7 @@
   "name": "selfies-lang",
   "displayName": "SELFIES Language Support",
   "description": "Complete language support for SELFIES molecular notation with DSL, syntax highlighting, live preview, and molecular structure visualization",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "ghost---shadow",
   "engines": {
     "vscode": "^1.85.0"
@@ -54,13 +54,27 @@
     "commands": [
       {
         "command": "selfies.showMolecule",
-        "title": "SELFIES: Show Molecular Structure"
+        "title": "SELFIES: Show Molecular Structure",
+        "icon": "$(preview)"
       },
       {
         "command": "selfies.togglePreview",
-        "title": "SELFIES: Toggle Preview Panel"
+        "title": "SELFIES: Toggle Preview Panel",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "selfies.togglePreview",
+          "when": "resourceLangId == selfies",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "SELFIES",
       "properties": {

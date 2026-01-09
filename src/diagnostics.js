@@ -1,7 +1,9 @@
-const vscode = require('vscode');
-const { parse, loadWithImports } = require('selfies-js');
-const path = require('path');
-const fs = require('fs');
+'use strict';
+
+import * as vscode from 'vscode';
+import { parse, loadWithImports } from 'selfies-js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Create a diagnostics provider for SELFIES files
@@ -141,6 +143,4 @@ function createDiagnosticsProvider() {
     };
 }
 
-module.exports = {
-    createDiagnosticsProvider
-};
+export { createDiagnosticsProvider };
