@@ -6,9 +6,15 @@ const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
 
 async function main() {
+    // Ensure dist directory exists
+    const distDir = path.join(__dirname, 'dist');
+    if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true });
+    }
+
     // Copy RDKit WASM file to dist
     const wasmSrc = path.join(__dirname, 'node_modules', '@rdkit', 'rdkit', 'dist', 'RDKit_minimal.wasm');
-    const wasmDest = path.join(__dirname, 'dist', 'RDKit_minimal.wasm');
+    const wasmDest = path.join(distDir, 'RDKit_minimal.wasm');
 
     if (fs.existsSync(wasmSrc)) {
         fs.copyFileSync(wasmSrc, wasmDest);
