@@ -149,7 +149,10 @@
         function updateView(lineInfo) {
             const content = document.getElementById('content');
 
-            console.log('updateView called with:', lineInfo);
+            console.log('=== updateView called ===');
+            console.log('lineInfo:', lineInfo);
+            console.log('Has RDKit SVG:', !!lineInfo?.svg);
+            console.log('Has SMILES:', !!lineInfo?.smiles);
 
             if (!lineInfo || lineInfo.error) {
                 content.innerHTML = `
@@ -179,15 +182,19 @@
 
             if (lineInfo.svg) {
                 // Use RDKit-generated SVG directly
+                console.log('✓ Using RDKit-generated SVG');
                 html += `
                     <div class="structure-container" id="structure-wrapper">
+                        <div style="color: #4FC3F7; font-size: 10px; margin-bottom: 5px;">Rendered with RDKit</div>
                         ${lineInfo.svg}
                     </div>
                 `;
             } else if (smiles) {
                 // Fallback to smiles-drawer
+                console.log('⚠ Falling back to smiles-drawer (RDKit not available)');
                 html += `
                     <div class="structure-container" id="structure-wrapper">
+                        <div style="color: orange; font-size: 10px; margin-bottom: 5px;">Rendered with smiles-drawer (fallback)</div>
                         <svg id="structure" width="500" height="300"></svg>
                     </div>
                 `;
