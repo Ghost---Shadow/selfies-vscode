@@ -10,8 +10,8 @@
 # Functional groups
 [hydroxyl] = [O]
 [amino] = [N]
-[carbonyl] = [C][=O]
-[carboxyl] = [carbonyl][O]
+[carbonyl] = [=O]
+[carboxyl] = [C][=Branch1][C][=O][O]
 
 # Simple molecules
 [methanol] = [methyl][hydroxyl]
@@ -28,8 +28,8 @@
 [ethylamine] = [ethyl][amino]
 
 # More complex molecules
-[acetone] = [methyl][C][=O][methyl]
-[acetaldehyde] = [methyl][carbonyl]
+[acetone] = [methyl][C][=Branch1][C][=O][methyl]
+[acetaldehyde] = [methyl][C][=O]
 
 # Aromatic compounds
 [benzene] = [C][=C][C][=C][C][=C][Ring1][=Branch1]
