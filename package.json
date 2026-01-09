@@ -2,7 +2,7 @@
   "name": "selfies-lang",
   "displayName": "SELFIES Language Support",
   "description": "Complete language support for SELFIES molecular notation with DSL, syntax highlighting, live preview, and molecular structure visualization",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "ghost---shadow",
   "engines": {
     "vscode": "^1.85.0"
@@ -25,11 +25,6 @@
     "visualization"
   ],
   "icon": "icon.png",
-  "activationEvents": [
-    "onLanguage:selfies",
-    "onCommand:selfies.showMolecule",
-    "onCommand:selfies.togglePreview"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "languages": [
