@@ -32,8 +32,16 @@ class LineTracker {
         // Listen for active editor changes
         this._editorChangeListener = vscode.window.onDidChangeActiveTextEditor((editor) => {
             if (editor && editor.document.languageId === 'selfies') {
-                this._currentDocument = editor.document;
-                this._handleSelectionChange({ textEditor: editor, selections: editor.selections });
+                // Check if document changed before updating
+                const documentChanged = this._currentDocument !== editor.document;
+                if (documentChanged) {
+                    this._parseResult = null;
+                    this._currentDocument = editor.document;
+                }
+                // Always update on editor change, even if line number is the same
+                const position = editor.selections[0].active;
+                this._currentLine = position.line;
+                this._updateLineInfo();
             }
         });
 
@@ -59,9 +67,8 @@ class LineTracker {
         const position = event.selections[0].active;
         const lineNumber = position.line;
 
-        if (this._currentLine !== lineNumber || this._currentDocument !== editor.document) {
+        if (this._currentLine !== lineNumber) {
             this._currentLine = lineNumber;
-            this._currentDocument = editor.document;
             this._updateLineInfo();
         }
     }
