@@ -29,9 +29,10 @@ function createDiagnosticsProvider() {
             // Convert selfies-js errors to VS Code diagnostics
             if (result.errors && result.errors.length > 0) {
                 for (const error of result.errors) {
-                    const line = error.line !== undefined ? error.line : 0;
-                    const column = error.column !== undefined ? error.column : 0;
-                    const endColumn = error.endColumn !== undefined ? error.endColumn : column + 1;
+                    // Parser uses 1-based line/column numbers, VS Code uses 0-based
+                    const line = error.line !== undefined ? error.line - 1 : 0;
+                    const column = error.column !== undefined ? error.column - 1 : 0;
+                    const endColumn = error.endColumn !== undefined ? error.endColumn - 1 : column + 1;
 
                     const range = new vscode.Range(
                         new vscode.Position(line, column),
@@ -60,9 +61,10 @@ function createDiagnosticsProvider() {
             // Add warnings for chemical validity issues
             if (result.warnings && result.warnings.length > 0) {
                 for (const warning of result.warnings) {
-                    const line = warning.line !== undefined ? warning.line : 0;
-                    const column = warning.column !== undefined ? warning.column : 0;
-                    const endColumn = warning.endColumn !== undefined ? warning.endColumn : column + 1;
+                    // Parser uses 1-based line/column numbers, VS Code uses 0-based
+                    const line = warning.line !== undefined ? warning.line - 1 : 0;
+                    const column = warning.column !== undefined ? warning.column - 1 : 0;
+                    const endColumn = warning.endColumn !== undefined ? warning.endColumn - 1 : column + 1;
 
                     const range = new vscode.Range(
                         new vscode.Position(line, column),

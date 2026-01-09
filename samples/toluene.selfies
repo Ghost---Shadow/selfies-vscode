@@ -9,7 +9,7 @@
 
 # More complex molecules
 [carbonyl] = [C][=O]
-[carboxyl] = [carbonyl][O]
+[carboxyl] = [C][=Branch1][C][=O][O]
 [acetic_acid] = [methyl][carboxyl]
 
 # Rings

@@ -18,4 +18,4 @@
 [propanol] = [propyl][hydroxyl]
 
 # More complex
-[acetone] = [methyl][C][carbonyl][methyl]
+[acetone] = [methyl][C][=Branch1][C][carbonyl][methyl]
