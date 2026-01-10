@@ -2,7 +2,7 @@
   "name": "selfies-lang",
   "displayName": "SELFIES Language Support",
   "description": "Complete language support for SELFIES molecular notation with DSL, syntax highlighting, live preview, and molecular structure visualization",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "publisher": "ghost---shadow",
   "engines": {
     "vscode": "^1.85.0"
@@ -115,7 +115,7 @@
   },
   "dependencies": {
     "@rdkit/rdkit": "^2025.3.4-1.0.0",
-    "selfies-js": "^0.2.0"
+    "selfies-js": "^0.3.3"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
