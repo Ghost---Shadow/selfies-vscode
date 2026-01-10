@@ -5,6 +5,7 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#imports" },
+    { "include": "#repeat-macro" },
     { "include": "#definitions" }
   ],
   "repository": {
@@ -60,6 +61,33 @@
                 }
               ]
             }
+          ]
+        }
+      ]
+    },
+    "repeat-macro": {
+      "patterns": [
+        {
+          "name": "meta.function-call.repeat.selfies",
+          "begin": "\\b(repeat)\\s*(\\()",
+          "end": "\\)",
+          "beginCaptures": {
+            "1": { "name": "entity.name.function.macro.selfies" },
+            "2": { "name": "punctuation.definition.parameters.begin.selfies" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.parameters.end.selfies" }
+          },
+          "patterns": [
+            {
+              "name": "constant.numeric.integer.selfies",
+              "match": "\\b\\d+\\b"
+            },
+            {
+              "name": "punctuation.separator.comma.selfies",
+              "match": ","
+            },
+            { "include": "#tokens" }
           ]
         }
       ]
