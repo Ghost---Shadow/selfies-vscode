@@ -87,6 +87,22 @@ class LineTracker {
     }
 
     /**
+     * Format tokens array into a display string
+     * Handles both string tokens and REPEAT_CALL objects
+     */
+    _formatTokens(tokens) {
+        return tokens.map(token => {
+            if (typeof token === 'string') {
+                return token;
+            } else if (typeof token === 'object' && token.type === 'REPEAT_CALL') {
+                return `repeat(${token.pattern}, ${token.count})`;
+            } else {
+                return String(token);
+            }
+        }).join('');
+    }
+
+    /**
      * Update information about the current line
      */
     _updateLineInfo() {
@@ -135,7 +151,7 @@ class LineTracker {
                 this._onDidChangeCurrentLine.fire({
                     line: this._currentLine,
                     name: definition.name,
-                    expression: definition.tokens ? definition.tokens.join('') : '',
+                    expression: definition.tokens ? this._formatTokens(definition.tokens) : '',
                     error: error || 'Could not resolve definition'
                 });
                 return;
@@ -164,7 +180,7 @@ class LineTracker {
             const lineInfo = {
                 line: this._currentLine,
                 name: definition.name,
-                expression: definition.tokens ? definition.tokens.join('') : '',
+                expression: definition.tokens ? this._formatTokens(definition.tokens) : '',
                 selfies: selfies,
                 smiles: smiles,
                 molecularWeight: molecularWeight,
