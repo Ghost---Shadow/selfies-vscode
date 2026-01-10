@@ -115,7 +115,7 @@
   },
   "dependencies": {
     "@rdkit/rdkit": "^2025.3.4-1.0.0",
-    "selfies-js": "^0.3.3"
+    "selfies-js": "^0.3.4"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
