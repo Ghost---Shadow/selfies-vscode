@@ -12,15 +12,27 @@ import * as fs from 'fs';
 function createDiagnosticsProvider() {
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('selfies');
 
+    // Helper function to check if file is supported
+    const isSupportedFile = (document) => {
+        return document.languageId === 'selfies' ||
+               document.fileName.endsWith('.smiles.js');
+    };
+
     // Update diagnostics when document changes
     const updateDiagnostics = (document) => {
-        if (document.languageId !== 'selfies') {
+        if (!isSupportedFile(document)) {
             return;
         }
 
         const text = document.getText();
         const uri = document.uri;
         const diagnostics = [];
+
+        // Skip diagnostics for smiles-js files (they're just JavaScript)
+        if (document.fileName.endsWith('.smiles.js')) {
+            diagnosticCollection.set(uri, diagnostics);
+            return;
+        }
 
         try {
             // Parse the document with imports support

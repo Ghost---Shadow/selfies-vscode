@@ -28,13 +28,20 @@ export function activate(context) {
     // Create preview panel manager
     let previewPanel = null;
 
+    // Helper function to check if file is supported
+    const isSupportedFile = (editor) => {
+        if (!editor) return false;
+        return editor.document.languageId === 'selfies' ||
+               editor.document.fileName.endsWith('.smiles.js');
+    };
+
     // Register command to show molecular structure
     const showMoleculeCommand = vscode.commands.registerCommand(
         'selfies.showMolecule',
         () => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || editor.document.languageId !== 'selfies') {
-                vscode.window.showErrorMessage('Please open a .selfies file first');
+            if (!isSupportedFile(editor)) {
+                vscode.window.showErrorMessage('Please open a .selfies or .smiles.js file first');
                 return;
             }
 
@@ -73,7 +80,7 @@ export function activate(context) {
         const config = vscode.workspace.getConfiguration('selfies');
         if (config.get('autoOpenPreview', true)) {
             const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'selfies') {
+            if (isSupportedFile(editor)) {
                 // Only auto-open if panel doesn't exist
                 if (!previewPanel) {
                     vscode.commands.executeCommand('selfies.showMolecule');
@@ -84,7 +91,7 @@ export function activate(context) {
 
     // Listen for active editor changes
     const editorChangeListener = vscode.window.onDidChangeActiveTextEditor((editor) => {
-        if (editor && editor.document.languageId === 'selfies') {
+        if (isSupportedFile(editor)) {
             autoOpenPreview();
         }
     });

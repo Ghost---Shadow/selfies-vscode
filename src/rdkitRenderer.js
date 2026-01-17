@@ -31,11 +31,14 @@ export async function generateSVG(smiles, options = {}) {
 
     let mol = null;
     try {
+        console.log('[RDKit] Attempting to render SMILES:', smiles);
+
         // Create molecule from SMILES
         mol = rdkit.get_mol(smiles);
 
         if (!mol || !mol.is_valid()) {
-            throw new Error('Invalid molecule');
+            console.error('[RDKit] Invalid molecule for SMILES:', smiles);
+            throw new Error(`Invalid molecule for SMILES: ${smiles}`);
         }
 
         // Generate SVG
@@ -45,9 +48,11 @@ export async function generateSVG(smiles, options = {}) {
             addStereoAnnotation
         }));
 
+        console.log('[RDKit] Successfully rendered SMILES:', smiles);
         return svg;
     } catch (err) {
-        throw new Error(`Failed to generate SVG: ${err.message}`);
+        console.error('[RDKit] Error rendering SMILES:', smiles, 'Error:', err.message);
+        throw new Error(`Failed to generate SVG for "${smiles}": ${err.message}`);
     } finally {
         // Clean up molecule object
         if (mol) {

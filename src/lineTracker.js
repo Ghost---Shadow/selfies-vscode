@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { loadWithImports, resolve, decode, getMolecularWeight, getFormula } from 'selfies-js';
 import * as path from 'path';
 import * as fs from 'fs';
+import { pathToFileURL } from 'url';
 
 /**
  * Tracks the current cursor position and provides information about the current line
@@ -29,9 +30,18 @@ class LineTracker {
             }
         });
 
+        // Helper function to check if file is supported
+        this._isSupportedFile = (document) => {
+            return document.languageId === 'selfies' ||
+                   document.fileName.endsWith('.smiles.js');
+        };
+
+        // Cache for loaded smiles-js modules
+        this._smilesModuleCache = new Map();
+
         // Listen for active editor changes
         this._editorChangeListener = vscode.window.onDidChangeActiveTextEditor((editor) => {
-            if (editor && editor.document.languageId === 'selfies') {
+            if (editor && this._isSupportedFile(editor.document)) {
                 // Check if document changed before updating
                 const documentChanged = this._currentDocument !== editor.document;
                 if (documentChanged) {
@@ -46,7 +56,7 @@ class LineTracker {
         });
 
         // Initialize with current editor
-        if (vscode.window.activeTextEditor?.document.languageId === 'selfies') {
+        if (vscode.window.activeTextEditor && this._isSupportedFile(vscode.window.activeTextEditor.document)) {
             this._currentDocument = vscode.window.activeTextEditor.document;
             this._handleSelectionChange({
                 textEditor: vscode.window.activeTextEditor,
@@ -60,7 +70,7 @@ class LineTracker {
      */
     _handleSelectionChange(event) {
         const editor = event.textEditor;
-        if (!editor || editor.document.languageId !== 'selfies') {
+        if (!editor || !this._isSupportedFile(editor.document)) {
             return;
         }
 
@@ -77,7 +87,7 @@ class LineTracker {
      * Handle document changes
      */
     _handleDocumentChange(document) {
-        if (document.languageId !== 'selfies') {
+        if (!this._isSupportedFile(document)) {
             return;
         }
 
@@ -103,23 +113,127 @@ class LineTracker {
     }
 
     /**
+     * Load and get exports from a smiles-js file
+     */
+    async _loadSmilesModule(filePath) {
+        // Check cache first
+        const cacheKey = `${filePath}:${fs.statSync(filePath).mtimeMs}`;
+        if (this._smilesModuleCache.has(cacheKey)) {
+            return this._smilesModuleCache.get(cacheKey);
+        }
+
+        try {
+            // Clear require cache to get fresh module
+            delete require.cache[require.resolve(filePath)];
+
+            // Use dynamic import for ES modules
+            const fileUrl = pathToFileURL(filePath).href;
+            const module = await import(`${fileUrl}?t=${Date.now()}`);
+
+            // Cache the result
+            this._smilesModuleCache.clear(); // Clear old cache
+            this._smilesModuleCache.set(cacheKey, module);
+
+            return module;
+        } catch (err) {
+            console.error('Failed to load smiles module:', err);
+            return null;
+        }
+    }
+
+    /**
+     * Find the export at a specific line
+     */
+    _findExportAtLine(text, lineNumber) {
+        const lines = text.split('\n');
+        const line = lines[lineNumber];
+
+        if (!line) return null;
+
+        // Match: export const NAME = ...
+        const match = line.match(/export\s+const\s+(\w+)\s*=/);
+        if (match) {
+            return match[1];
+        }
+
+        return null;
+    }
+
+    /**
      * Update information about the current line
      */
-    _updateLineInfo() {
+    async _updateLineInfo() {
         if (!this._currentDocument || this._currentLine === null) {
             return;
         }
 
+        const isSmilesJS = this._currentDocument.fileName.endsWith('.smiles.js');
+
         try {
-            // Parse the document if not already parsed
+            const lineText = this._currentDocument.lineAt(this._currentLine).text.trim();
+
+            // Handle smiles-js files
+            if (isSmilesJS) {
+                // Skip empty lines and comments
+                if (!lineText || lineText.startsWith('//') || lineText.startsWith('/*')) {
+                    this._onDidChangeCurrentLine.fire(null);
+                    return;
+                }
+
+                // Find the export name at this line
+                const text = this._currentDocument.getText();
+                const exportName = this._findExportAtLine(text, this._currentLine);
+
+                if (!exportName) {
+                    this._onDidChangeCurrentLine.fire(null);
+                    return;
+                }
+
+                // Load the module and get the export
+                const module = await this._loadSmilesModule(this._currentDocument.fileName);
+
+                if (!module || !module[exportName]) {
+                    this._onDidChangeCurrentLine.fire(null);
+                    return;
+                }
+
+                const fragment = module[exportName];
+
+                // Check if it has the .smiles property (it's a Fragment)
+                if (!fragment.smiles) {
+                    this._onDidChangeCurrentLine.fire(null);
+                    return;
+                }
+
+                console.log('[LineTracker] Extracted fragment from smiles-js:', {
+                    exportName,
+                    smiles: fragment.smiles,
+                    formula: fragment.formula,
+                    molecularWeight: fragment.molecularWeight
+                });
+
+                const lineInfo = {
+                    line: this._currentLine,
+                    name: exportName,
+                    expression: lineText,
+                    selfies: null,
+                    smiles: fragment.smiles,
+                    molecularWeight: fragment.molecularWeight,
+                    formula: fragment.formula,
+                    error: null
+                };
+
+                this._onDidChangeCurrentLine.fire(lineInfo);
+                return;
+            }
+
+            // Parse the document if not already parsed (for selfies files)
             if (!this._parseResult) {
                 const text = this._currentDocument.getText();
                 this._parseResult = loadWithImports(text, this._currentDocument.uri.fsPath);
             }
 
-            const lineText = this._currentDocument.lineAt(this._currentLine).text.trim();
-
-            // Skip empty lines and comments
+            // Skip empty lines and comments (for selfies files)
             if (!lineText || lineText.startsWith('#')) {
                 this._onDidChangeCurrentLine.fire(null);
                 return;

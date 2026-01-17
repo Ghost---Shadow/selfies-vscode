@@ -8,6 +8,8 @@ import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { parse, loadWithImports, loadFile, resolve } from 'selfies-js'
+import { Fragment } from 'smiles-js'
+import { generateSVG, isValidSMILES } from '../../../src/rdkitRenderer.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROGRAMS_DIR = __dirname
@@ -601,6 +603,108 @@ describe('VSCode Extension Fixture Programs', () => {
 
         for (const [name, expected] of Object.entries(expectedSmiles)) {
           expect(resolve(program, name, { decode: true })).toBe(expected)
+        }
+      })
+    })
+  })
+
+  describe('SMILES-JS Support', () => {
+    describe('example.smiles.js', () => {
+      test('should load module and extract exports', async () => {
+        const modulePath = join(PROGRAMS_DIR, 'example.smiles.js')
+
+        // Dynamic import the module
+        const { pathToFileURL } = await import('url')
+        const fileUrl = pathToFileURL(modulePath).href
+        const module = await import(`${fileUrl}?t=${Date.now()}`)
+
+        // Test that exports exist and have .smiles property
+        expect(module.methane).toBeTruthy()
+        expect(module.methane.smiles).toBe('C')
+        expect(module.methane.formula).toBe('CH4')
+        expect(module.methane.molecularWeight).toBeCloseTo(16.04, 1)
+
+        expect(module.ethane).toBeTruthy()
+        expect(module.ethane.smiles).toBe('CC')
+
+        expect(module.propane).toBeTruthy()
+        expect(module.propane.smiles).toBe('CCC')
+      })
+
+      test('should find export names at specific lines', () => {
+        const source = readProgram('example.smiles.js')
+        const lines = source.split('\n')
+
+        const findExportAtLine = (lineNum) => {
+          const line = lines[lineNum - 1]
+          const match = line.match(/export\s+const\s+(\w+)\s*=/)
+          return match ? match[1] : null
+        }
+
+        // Test finding exports at specific lines
+        expect(findExportAtLine(15)).toBe('methane')
+        expect(findExportAtLine(16)).toBe('ethane')
+        expect(findExportAtLine(17)).toBe('propane')
+        expect(findExportAtLine(20)).toBe('water')
+        expect(findExportAtLine(24)).toBe('benzeneRing')
+      })
+
+      test('should provide molecular properties for all fragments', async () => {
+        const modulePath = join(PROGRAMS_DIR, 'example.smiles.js')
+        const { pathToFileURL } = await import('url')
+        const fileUrl = pathToFileURL(modulePath).href
+        const module = await import(`${fileUrl}?t=${Date.now()}`)
+
+        // Test various exports
+        const testCases = [
+          { name: 'methane', smiles: 'C', formula: 'CH4' },
+          { name: 'ethane', smiles: 'CC', formula: 'C2H6' },
+          { name: 'propane', smiles: 'CCC', formula: 'C3H8' },
+          { name: 'water', smiles: 'O', formula: 'O' },
+          { name: 'ammonia', smiles: 'N', formula: 'N' },
+        ]
+
+        for (const { name, smiles, formula } of testCases) {
+          const fragment = module[name]
+          expect(fragment).toBeTruthy()
+          expect(fragment.smiles).toBe(smiles)
+          expect(fragment.formula).toBe(formula)
+          expect(fragment.molecularWeight).toBeGreaterThan(0)
+        }
+      })
+
+      test('should validate SMILES with RDKit', async () => {
+        const modulePath = join(PROGRAMS_DIR, 'example.smiles.js')
+        const { pathToFileURL } = await import('url')
+        const fileUrl = pathToFileURL(modulePath).href
+        const module = await import(`${fileUrl}?t=${Date.now()}`)
+
+        // Test that simple molecules are valid
+        const validMolecules = ['methane', 'ethane', 'propane', 'water', 'ammonia', 'ethanol', 'toluene']
+
+        for (const name of validMolecules) {
+          const fragment = module[name]
+          expect(fragment).toBeTruthy()
+          const isValid = await isValidSMILES(fragment.smiles)
+          expect(isValid).toBe(true)
+        }
+      })
+
+      test('should render molecules with RDKit', async () => {
+        const modulePath = join(PROGRAMS_DIR, 'example.smiles.js')
+        const { pathToFileURL } = await import('url')
+        const fileUrl = pathToFileURL(modulePath).href
+        const module = await import(`${fileUrl}?t=${Date.now()}`)
+
+        // Test that molecules can be rendered without errors
+        const testMolecules = ['methane', 'ethane', 'toluene', 'aspirin', 'ibuprofen']
+
+        for (const name of testMolecules) {
+          const fragment = module[name]
+          expect(fragment).toBeTruthy()
+
+          // Should not throw - just checking if rendering works
+          await expect(generateSVG(fragment.smiles)).resolves.toBeTruthy()
         }
       })
     })

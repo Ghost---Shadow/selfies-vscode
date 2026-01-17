@@ -40,6 +40,8 @@ Or search "SELFIES" in the VS Code extensions panel.
 
 ## Quick Start
 
+### Using SELFIES DSL
+
 1. Create a file with `.selfies` extension
 2. Start defining molecules — the preview panel opens automatically
 3. Move your cursor to any definition to see its structure
@@ -54,7 +56,38 @@ Or search "SELFIES" in the VS Code extensions panel.
 [methanol] = [methyl][hydroxyl]
 ```
 
+### Using smiles-js (JavaScript)
+
+1. Create a file with `.smiles.js` extension
+2. Import Fragment and Ring from `smiles-js`
+3. Export your molecules as constants
+4. Move your cursor to any exported molecule to see its structure
+
+```javascript
+// molecules.smiles.js
+import { Fragment, Ring } from 'smiles-js';
+import { benzene, methyl, ethyl, hydroxyl } from 'smiles-js/common';
+
+export const methane = Fragment('C');
+export const ethanol = ethyl(hydroxyl);
+export const toluene = benzene(methyl);
+```
+
+The extension executes your JavaScript file and reads the `.smiles` property from exported fragments - no regex parsing!
+
 ## Features
+
+### Dual Format Support
+
+**SELFIES DSL (`.selfies` files)**
+- Domain-specific language for molecular composition
+- Multi-file imports and reusable fragments
+- Real-time diagnostics and error checking
+
+**smiles-js (`.smiles.js` files)**
+- JavaScript-based molecular construction
+- Use Fragment() and Ring() functions
+- Full JavaScript IDE support with molecular previews
 
 ### Live Preview
 
@@ -65,13 +98,15 @@ As your cursor moves, the preview panel shows:
 - SMILES output
 - Export as SVG or PNG
 
+Works for both `.selfies` and `.smiles.js` files!
+
 ### Syntax Highlighting
 
-Full highlighting for atoms, bonds, branches, rings, comments, and references.
+Full highlighting for atoms, bonds, branches, rings, comments, and references in SELFIES files. JavaScript syntax highlighting for `.smiles.js` files.
 
 ### Real-time Diagnostics
 
-Instant feedback on:
+Instant feedback on SELFIES files:
 - Undefined references
 - Circular dependencies
 - Duplicate definitions
@@ -79,11 +114,18 @@ Instant feedback on:
 
 ### Multi-file Projects
 
-Import fragments across files:
+Import fragments across SELFIES files:
 
 ```selfies
 import "./fragments.selfies"                       # import all
 import [methyl, ethyl] from "./fragments.selfies"  # import specific
+```
+
+Or use standard JavaScript imports in `.smiles.js` files:
+
+```javascript
+import { Fragment } from 'smiles-js';
+import { benzene, methyl } from 'smiles-js/common';
 ```
 
 ## Commands
@@ -96,7 +138,7 @@ import [methyl, ethyl] from "./fragments.selfies"  # import specific
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `selfies.previewOnCursorMove` | `true` | Update preview when cursor moves |
-| `selfies.autoOpenPreview` | `true` | Auto-open preview for .selfies files |
+| `selfies.autoOpenPreview` | `true` | Auto-open preview for `.selfies` and `.smiles.js` files |
 | `selfies.renderingEngine` | `smiles-drawer` | Molecule rendering engine |
 
 ## Language Rules
@@ -108,7 +150,8 @@ import [methyl, ethyl] from "./fragments.selfies"  # import specific
 
 ## Related
 
-- **[selfies-js](https://github.com/Ghost---Shadow/selfies-js)** — The underlying library (also usable as CLI and npm package)
+- **[selfies-js](https://github.com/Ghost---Shadow/selfies-js)** — SELFIES DSL library (also usable as CLI and npm package)
+- **[smiles-js](https://github.com/Ghost---Shadow/smiles-js)** — JavaScript library for composable molecular fragments
 - **[SELFIES paper](https://doi.org/10.1088/2632-2153/aba947)** — Original research by the Aspuru-Guzik group
 
 ## Citation

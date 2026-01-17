@@ -27,6 +27,7 @@
   "icon": "icon.png",
   "activationEvents": [
     "onLanguage:selfies",
+    "onLanguage:javascript",
     "onCommand:selfies.showMolecule",
     "onCommand:selfies.togglePreview"
   ],
@@ -75,7 +76,7 @@
       "editor/title": [
         {
           "command": "selfies.togglePreview",
-          "when": "resourceLangId == selfies",
+          "when": "resourceLangId == selfies || resourceFilename =~ /\\.smiles\\.js$/",
           "group": "navigation"
         }
       ]
@@ -115,7 +116,8 @@
   },
   "dependencies": {
     "@rdkit/rdkit": "^2025.3.4-1.0.0",
-    "selfies-js": "^0.3.6"
+    "selfies-js": "^0.3.6",
+    "smiles-js": "^0.2.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
