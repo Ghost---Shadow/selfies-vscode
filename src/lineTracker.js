@@ -205,12 +205,12 @@ class LineTracker {
                     return;
                 }
 
-                console.log('[LineTracker] Extracted fragment from smiles-js:', {
-                    exportName,
-                    smiles: fragment.smiles,
-                    formula: fragment.formula,
-                    molecularWeight: fragment.molecularWeight
-                });
+                // console.log('[LineTracker] Extracted fragment from smiles-js:', {
+                //     exportName,
+                //     smiles: fragment.smiles,
+                //     formula: fragment.formula,
+                //     molecularWeight: fragment.molecularWeight
+                // });
 
                 const lineInfo = {
                     line: this._currentLine,
