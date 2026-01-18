@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "selfies-lang",
   "displayName": "SELFIES Language Support",
   "description": "Complete language support for SELFIES molecular notation with DSL, syntax highlighting, live preview, and molecular structure visualization",
@@ -111,7 +112,8 @@
     "compile": "node esbuild.js",
     "package": "node esbuild.js --production",
     "watch": "node esbuild.js --watch",
-    "lint": "eslint src",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "bun test"
   },
   "dependencies": {
@@ -120,10 +122,12 @@
     "smiles-js": "^0.2.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/vscode": "^1.85.0",
     "@vscode/test-electron": "^2.3.8",
     "esbuild": "^0.27.2",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.1",
+    "globals": "^17.0.0",
     "sharp": "^0.34.5"
   },
   "repository": {

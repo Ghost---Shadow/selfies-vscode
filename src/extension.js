@@ -1,5 +1,3 @@
-'use strict';
-
 import * as vscode from 'vscode';
 import { createDiagnosticsProvider } from './diagnostics';
 import { LineTracker } from './lineTracker';
@@ -11,111 +9,111 @@ import { initRDKit } from './rdkitRenderer';
  * @param {vscode.ExtensionContext} context
  */
 export function activate(context) {
-    // Initialize RDKit asynchronously
-    initRDKit().catch(err => {
-        console.error('Failed to initialize RDKit:', err);
-        vscode.window.showWarningMessage('SELFIES: RDKit initialization failed, using fallback renderer');
-    });
+  // Initialize RDKit asynchronously
+  initRDKit().catch((err) => {
+    console.error('Failed to initialize RDKit:', err);
+    vscode.window.showWarningMessage('SELFIES: RDKit initialization failed, using fallback renderer');
+  });
 
-    // Create diagnostics provider
-    const diagnosticsProvider = createDiagnosticsProvider();
-    context.subscriptions.push(diagnosticsProvider);
+  // Create diagnostics provider
+  const diagnosticsProvider = createDiagnosticsProvider();
+  context.subscriptions.push(diagnosticsProvider);
 
-    // Create line tracker for cursor position
-    const lineTracker = new LineTracker();
-    context.subscriptions.push(lineTracker);
+  // Create line tracker for cursor position
+  const lineTracker = new LineTracker();
+  context.subscriptions.push(lineTracker);
 
-    // Create preview panel manager
-    let previewPanel = null;
+  // Create preview panel manager
+  let previewPanel = null;
 
-    // Helper function to check if file is supported
-    const isSupportedFile = (editor) => {
-        if (!editor) return false;
-        return editor.document.languageId === 'selfies' ||
-               editor.document.fileName.endsWith('.smiles.js');
-    };
+  // Helper function to check if file is supported
+  const isSupportedFile = (editor) => {
+    if (!editor) return false;
+    return editor.document.languageId === 'selfies'
+               || editor.document.fileName.endsWith('.smiles.js');
+  };
 
-    // Register command to show molecular structure
-    const showMoleculeCommand = vscode.commands.registerCommand(
-        'selfies.showMolecule',
-        () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!isSupportedFile(editor)) {
-                vscode.window.showErrorMessage('Please open a .selfies or .smiles.js file first');
-                return;
-            }
+  // Register command to show molecular structure
+  const showMoleculeCommand = vscode.commands.registerCommand(
+    'selfies.showMolecule',
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!isSupportedFile(editor)) {
+        vscode.window.showErrorMessage('Please open a .selfies or .smiles.js file first');
+        return;
+      }
 
-            if (!previewPanel) {
-                previewPanel = new PreviewPanel(context.extensionUri);
-                previewPanel.onDidDispose(() => {
-                    previewPanel = null;
-                });
-            }
+      if (!previewPanel) {
+        previewPanel = new PreviewPanel(context.extensionUri);
+        previewPanel.onDidDispose(() => {
+          previewPanel = null;
+        });
+      }
 
-            previewPanel.reveal();
+      previewPanel.reveal();
 
-            // Update with current line
-            const lineInfo = lineTracker.getCurrentLineInfo();
-            if (lineInfo) {
-                previewPanel.update(lineInfo);
-            }
+      // Update with current line
+      const lineInfo = lineTracker.getCurrentLineInfo();
+      if (lineInfo) {
+        previewPanel.update(lineInfo);
+      }
+    },
+  );
+
+  // Register command to toggle preview
+  const togglePreviewCommand = vscode.commands.registerCommand(
+    'selfies.togglePreview',
+    () => {
+      if (previewPanel) {
+        previewPanel.dispose();
+        previewPanel = null;
+      } else {
+        vscode.commands.executeCommand('selfies.showMolecule');
+      }
+    },
+  );
+
+  // Auto-open preview if enabled in settings
+  const autoOpenPreview = () => {
+    const config = vscode.workspace.getConfiguration('selfies');
+    if (config.get('autoOpenPreview', true)) {
+      const editor = vscode.window.activeTextEditor;
+      if (isSupportedFile(editor)) {
+        // Only auto-open if panel doesn't exist
+        if (!previewPanel) {
+          vscode.commands.executeCommand('selfies.showMolecule');
         }
-    );
+      }
+    }
+  };
 
-    // Register command to toggle preview
-    const togglePreviewCommand = vscode.commands.registerCommand(
-        'selfies.togglePreview',
-        () => {
-            if (previewPanel) {
-                previewPanel.dispose();
-                previewPanel = null;
-            } else {
-                vscode.commands.executeCommand('selfies.showMolecule');
-            }
-        }
-    );
+  // Listen for active editor changes
+  const editorChangeListener = vscode.window.onDidChangeActiveTextEditor((editor) => {
+    if (isSupportedFile(editor)) {
+      autoOpenPreview();
+    }
+  });
 
-    // Auto-open preview if enabled in settings
-    const autoOpenPreview = () => {
-        const config = vscode.workspace.getConfiguration('selfies');
-        if (config.get('autoOpenPreview', true)) {
-            const editor = vscode.window.activeTextEditor;
-            if (isSupportedFile(editor)) {
-                // Only auto-open if panel doesn't exist
-                if (!previewPanel) {
-                    vscode.commands.executeCommand('selfies.showMolecule');
-                }
-            }
-        }
-    };
+  // Listen for cursor position changes
+  const cursorChangeListener = lineTracker.onDidChangeCurrentLine((lineInfo) => {
+    const config = vscode.workspace.getConfiguration('selfies');
+    if (config.get('previewOnCursorMove', true) && previewPanel) {
+      previewPanel.update(lineInfo);
+    }
+  });
 
-    // Listen for active editor changes
-    const editorChangeListener = vscode.window.onDidChangeActiveTextEditor((editor) => {
-        if (isSupportedFile(editor)) {
-            autoOpenPreview();
-        }
-    });
+  // Auto-open preview for currently active editor
+  autoOpenPreview();
 
-    // Listen for cursor position changes
-    const cursorChangeListener = lineTracker.onDidChangeCurrentLine((lineInfo) => {
-        const config = vscode.workspace.getConfiguration('selfies');
-        if (config.get('previewOnCursorMove', true) && previewPanel) {
-            previewPanel.update(lineInfo);
-        }
-    });
-
-    // Auto-open preview for currently active editor
-    autoOpenPreview();
-
-    context.subscriptions.push(showMoleculeCommand);
-    context.subscriptions.push(togglePreviewCommand);
-    context.subscriptions.push(editorChangeListener);
-    context.subscriptions.push(cursorChangeListener);
+  context.subscriptions.push(showMoleculeCommand);
+  context.subscriptions.push(togglePreviewCommand);
+  context.subscriptions.push(editorChangeListener);
+  context.subscriptions.push(cursorChangeListener);
 }
 
 /**
  * Deactivate the extension
  */
 export function deactivate() {
-    // Cleanup is handled by dispose methods
+  // Cleanup is handled by dispose methods
 }

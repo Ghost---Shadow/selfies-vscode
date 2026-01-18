@@ -9,7 +9,9 @@
  */
 
 import { Fragment, Ring } from 'smiles-js';
-import { benzene, methyl, ethyl, hydroxyl, carboxyl } from 'smiles-js/common';
+import {
+  benzene, methyl, ethyl, hydroxyl, carboxyl,
+} from 'smiles-js/common';
 
 // Simple fragments
 export const methane = Fragment('C');

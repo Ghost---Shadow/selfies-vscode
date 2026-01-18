@@ -1,5 +1,3 @@
-'use strict';
-
 import * as vscode from 'vscode';
 import { parse, loadWithImports } from 'selfies-js';
 import * as path from 'path';
@@ -10,151 +8,148 @@ import * as fs from 'fs';
  * @returns {vscode.Disposable}
  */
 function createDiagnosticsProvider() {
-    const diagnosticCollection = vscode.languages.createDiagnosticCollection('selfies');
+  const diagnosticCollection = vscode.languages.createDiagnosticCollection('selfies');
 
-    // Helper function to check if file is supported
-    const isSupportedFile = (document) => {
-        return document.languageId === 'selfies' ||
-               document.fileName.endsWith('.smiles.js');
-    };
+  // Helper function to check if file is supported
+  const isSupportedFile = (document) => document.languageId === 'selfies'
+               || document.fileName.endsWith('.smiles.js');
 
-    // Update diagnostics when document changes
-    const updateDiagnostics = (document) => {
-        if (!isSupportedFile(document)) {
-            return;
+  // Update diagnostics when document changes
+  const updateDiagnostics = (document) => {
+    if (!isSupportedFile(document)) {
+      return;
+    }
+
+    const text = document.getText();
+    const { uri } = document;
+    const diagnostics = [];
+
+    // Skip diagnostics for smiles-js files (they're just JavaScript)
+    if (document.fileName.endsWith('.smiles.js')) {
+      diagnosticCollection.set(uri, diagnostics);
+      return;
+    }
+
+    try {
+      // Parse the document with imports support
+      const result = loadWithImports(text, uri.fsPath);
+
+      // Convert selfies-js errors to VS Code diagnostics
+      if (result.errors && result.errors.length > 0) {
+        for (const error of result.errors) {
+          // Parser uses 1-based line/column numbers, VS Code uses 0-based
+          const line = error.line !== undefined ? error.line - 1 : 0;
+          const column = error.column !== undefined ? error.column - 1 : 0;
+          const endColumn = error.endColumn !== undefined ? error.endColumn - 1 : column + 1;
+
+          const range = new vscode.Range(
+            new vscode.Position(line, column),
+            new vscode.Position(line, endColumn),
+          );
+
+          const severity = getSeverity(error.type || error.severity);
+
+          const diagnostic = new vscode.Diagnostic(
+            range,
+            error.message,
+            severity,
+          );
+
+          diagnostic.source = 'selfies';
+
+          // Add error code if available
+          if (error.code) {
+            diagnostic.code = error.code;
+          }
+
+          diagnostics.push(diagnostic);
         }
+      }
 
-        const text = document.getText();
-        const uri = document.uri;
-        const diagnostics = [];
+      // Add warnings for chemical validity issues
+      if (result.warnings && result.warnings.length > 0) {
+        for (const warning of result.warnings) {
+          // Parser uses 1-based line/column numbers, VS Code uses 0-based
+          const line = warning.line !== undefined ? warning.line - 1 : 0;
+          const column = warning.column !== undefined ? warning.column - 1 : 0;
+          const endColumn = warning.endColumn !== undefined ? warning.endColumn - 1 : column + 1;
 
-        // Skip diagnostics for smiles-js files (they're just JavaScript)
-        if (document.fileName.endsWith('.smiles.js')) {
-            diagnosticCollection.set(uri, diagnostics);
-            return;
+          const range = new vscode.Range(
+            new vscode.Position(line, column),
+            new vscode.Position(line, endColumn),
+          );
+
+          const diagnostic = new vscode.Diagnostic(
+            range,
+            warning.message,
+            vscode.DiagnosticSeverity.Warning,
+          );
+
+          diagnostic.source = 'selfies';
+          diagnostics.push(diagnostic);
         }
+      }
+    } catch (err) {
+      // If parsing fails completely, show a general error
+      const diagnostic = new vscode.Diagnostic(
+        new vscode.Range(0, 0, 0, 1),
+        `Failed to parse SELFIES file: ${err.message}`,
+        vscode.DiagnosticSeverity.Error,
+      );
+      diagnostic.source = 'selfies';
+      diagnostics.push(diagnostic);
+    }
 
-        try {
-            // Parse the document with imports support
-            const result = loadWithImports(text, uri.fsPath);
+    diagnosticCollection.set(uri, diagnostics);
+  };
 
-            // Convert selfies-js errors to VS Code diagnostics
-            if (result.errors && result.errors.length > 0) {
-                for (const error of result.errors) {
-                    // Parser uses 1-based line/column numbers, VS Code uses 0-based
-                    const line = error.line !== undefined ? error.line - 1 : 0;
-                    const column = error.column !== undefined ? error.column - 1 : 0;
-                    const endColumn = error.endColumn !== undefined ? error.endColumn - 1 : column + 1;
+  // Map error types to VS Code severity levels
+  const getSeverity = (type) => {
+    switch (type) {
+      case 'error':
+      case 'syntax':
+      case 'undefined':
+      case 'circular':
+      case 'redefinition':
+        return vscode.DiagnosticSeverity.Error;
+      case 'warning':
+      case 'chemistry':
+        return vscode.DiagnosticSeverity.Warning;
+      case 'info':
+        return vscode.DiagnosticSeverity.Information;
+      case 'hint':
+        return vscode.DiagnosticSeverity.Hint;
+      default:
+        return vscode.DiagnosticSeverity.Error;
+    }
+  };
 
-                    const range = new vscode.Range(
-                        new vscode.Position(line, column),
-                        new vscode.Position(line, endColumn)
-                    );
+  // Listen for document changes
+  const documentChangeListener = vscode.workspace.onDidChangeTextDocument((event) => {
+    updateDiagnostics(event.document);
+  });
 
-                    const severity = getSeverity(error.type || error.severity);
+  // Listen for document open
+  const documentOpenListener = vscode.workspace.onDidOpenTextDocument((document) => {
+    updateDiagnostics(document);
+  });
 
-                    const diagnostic = new vscode.Diagnostic(
-                        range,
-                        error.message,
-                        severity
-                    );
+  // Listen for document close
+  const documentCloseListener = vscode.workspace.onDidCloseTextDocument((document) => {
+    diagnosticCollection.delete(document.uri);
+  });
 
-                    diagnostic.source = 'selfies';
+  // Update all currently open documents
+  vscode.workspace.textDocuments.forEach(updateDiagnostics);
 
-                    // Add error code if available
-                    if (error.code) {
-                        diagnostic.code = error.code;
-                    }
-
-                    diagnostics.push(diagnostic);
-                }
-            }
-
-            // Add warnings for chemical validity issues
-            if (result.warnings && result.warnings.length > 0) {
-                for (const warning of result.warnings) {
-                    // Parser uses 1-based line/column numbers, VS Code uses 0-based
-                    const line = warning.line !== undefined ? warning.line - 1 : 0;
-                    const column = warning.column !== undefined ? warning.column - 1 : 0;
-                    const endColumn = warning.endColumn !== undefined ? warning.endColumn - 1 : column + 1;
-
-                    const range = new vscode.Range(
-                        new vscode.Position(line, column),
-                        new vscode.Position(line, endColumn)
-                    );
-
-                    const diagnostic = new vscode.Diagnostic(
-                        range,
-                        warning.message,
-                        vscode.DiagnosticSeverity.Warning
-                    );
-
-                    diagnostic.source = 'selfies';
-                    diagnostics.push(diagnostic);
-                }
-            }
-
-        } catch (err) {
-            // If parsing fails completely, show a general error
-            const diagnostic = new vscode.Diagnostic(
-                new vscode.Range(0, 0, 0, 1),
-                `Failed to parse SELFIES file: ${err.message}`,
-                vscode.DiagnosticSeverity.Error
-            );
-            diagnostic.source = 'selfies';
-            diagnostics.push(diagnostic);
-        }
-
-        diagnosticCollection.set(uri, diagnostics);
-    };
-
-    // Map error types to VS Code severity levels
-    const getSeverity = (type) => {
-        switch (type) {
-            case 'error':
-            case 'syntax':
-            case 'undefined':
-            case 'circular':
-            case 'redefinition':
-                return vscode.DiagnosticSeverity.Error;
-            case 'warning':
-            case 'chemistry':
-                return vscode.DiagnosticSeverity.Warning;
-            case 'info':
-                return vscode.DiagnosticSeverity.Information;
-            case 'hint':
-                return vscode.DiagnosticSeverity.Hint;
-            default:
-                return vscode.DiagnosticSeverity.Error;
-        }
-    };
-
-    // Listen for document changes
-    const documentChangeListener = vscode.workspace.onDidChangeTextDocument((event) => {
-        updateDiagnostics(event.document);
-    });
-
-    // Listen for document open
-    const documentOpenListener = vscode.workspace.onDidOpenTextDocument((document) => {
-        updateDiagnostics(document);
-    });
-
-    // Listen for document close
-    const documentCloseListener = vscode.workspace.onDidCloseTextDocument((document) => {
-        diagnosticCollection.delete(document.uri);
-    });
-
-    // Update all currently open documents
-    vscode.workspace.textDocuments.forEach(updateDiagnostics);
-
-    return {
-        dispose: () => {
-            diagnosticCollection.dispose();
-            documentChangeListener.dispose();
-            documentOpenListener.dispose();
-            documentCloseListener.dispose();
-        }
-    };
+  return {
+    dispose: () => {
+      diagnosticCollection.dispose();
+      documentChangeListener.dispose();
+      documentOpenListener.dispose();
+      documentCloseListener.dispose();
+    },
+  };
 }
 
 export { createDiagnosticsProvider };
