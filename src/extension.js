@@ -4,6 +4,7 @@ import { createRoundTripDiagnosticsProvider } from './roundtripDiagnostics';
 import { LineTracker } from './lineTracker';
 import { PreviewPanel } from './webview/panel';
 import { initRDKit } from './rdkitRenderer';
+import { refactorMolecule } from './refactorMolecule';
 
 /**
  * Activate the SELFIES extension
@@ -109,10 +110,17 @@ export function activate(context) {
   // Auto-open preview for currently active editor
   autoOpenPreview();
 
+  // Register refactor molecule command
+  const refactorMoleculeCommand = vscode.commands.registerCommand(
+    'selfies.refactorMolecule',
+    () => refactorMolecule(),
+  );
+
   context.subscriptions.push(showMoleculeCommand);
   context.subscriptions.push(togglePreviewCommand);
   context.subscriptions.push(editorChangeListener);
   context.subscriptions.push(cursorChangeListener);
+  context.subscriptions.push(refactorMoleculeCommand);
 }
 
 /**

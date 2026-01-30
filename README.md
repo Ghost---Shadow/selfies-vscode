@@ -132,6 +132,17 @@ import { benzene, methyl } from 'smiles-js/common';
 
 - `SELFIES: Show Molecular Structure` — Open the preview panel
 - `SELFIES: Toggle Preview Panel` — Toggle preview on/off
+- `SELFIES: Refactor Molecule to Code` — Convert a Fragment to constructor code (right-click menu in `.smiles.js` files)
+
+### Refactor to Code (Experimental)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Ghost---Shadow/selfies-vscode/main/refactor-to-code.png" alt="Refactor to Code" width="600"/>
+</p>
+
+Right-click on any line with an exported Fragment in a `.smiles.js` file and select "SELFIES: Refactor Molecule to Code" to convert it into explicit Ring/Linear constructor calls.
+
+> **Note:** This feature is early in development and often fails for complex molecular structures. It works best with simple fragments.
 
 ## Settings
 

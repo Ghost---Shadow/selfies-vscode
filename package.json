@@ -70,6 +70,10 @@
           "light": "./icon.png",
           "dark": "./icon.png"
         }
+      },
+      {
+        "command": "selfies.refactorMolecule",
+        "title": "SELFIES: Refactor Molecule to Code"
       }
     ],
     "menus": {
@@ -78,6 +82,13 @@
           "command": "selfies.togglePreview",
           "when": "resourceLangId == selfies || resourceFilename =~ /\\.smiles\\.js$/",
           "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "selfies.refactorMolecule",
+          "when": "resourceFilename =~ /\\.smiles\\.js$/",
+          "group": "1_modification"
         }
       ]
     },
