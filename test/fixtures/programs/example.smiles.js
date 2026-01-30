@@ -10,7 +10,7 @@
 
 import { Fragment, Ring } from 'smiles-js';
 import {
-  benzene, methyl, ethyl, hydroxyl, carboxyl,
+  methyl, ethyl, hydroxyl, carboxyl,
 } from 'smiles-js/common';
 
 // Simple fragments

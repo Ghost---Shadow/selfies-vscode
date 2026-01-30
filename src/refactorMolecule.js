@@ -3,6 +3,10 @@ import { pathToFileURL } from 'url';
 
 /**
  * Find the export name at a specific line
+ * Returns { name, needsExport, constPosition } where:
+ * - name: the variable name
+ * - needsExport: true if 'export' keyword is missing
+ * - constPosition: character position of 'const' keyword (for inserting 'export ')
  */
 function findExportAtLine(text, lineNumber) {
   const lines = text.split('\n');
@@ -11,9 +15,16 @@ function findExportAtLine(text, lineNumber) {
   if (!line) return null;
 
   // Match: export const NAME = ...
-  const match = line.match(/export\s+const\s+(\w+)\s*=/);
-  if (match) {
-    return match[1];
+  const exportMatch = line.match(/export\s+const\s+(\w+)\s*=/);
+  if (exportMatch) {
+    return { name: exportMatch[1], needsExport: false, constPosition: null };
+  }
+
+  // Match: const NAME = ... (without export)
+  const constMatch = line.match(/^(\s*)const\s+(\w+)\s*=/);
+  if (constMatch) {
+    const leadingWhitespace = constMatch[1].length;
+    return { name: constMatch[2], needsExport: true, constPosition: leadingWhitespace };
   }
 
   return null;
@@ -104,16 +115,29 @@ export async function refactorMolecule() {
   }
 
   const lineNumber = editor.selection.active.line;
-  const text = document.getText();
-  const exportName = findExportAtLine(text, lineNumber);
+  let text = document.getText();
+  const exportInfo = findExportAtLine(text, lineNumber);
 
-  if (!exportName) {
-    vscode.window.showErrorMessage('No export found on the current line');
+  if (!exportInfo) {
+    vscode.window.showErrorMessage('No const declaration found on the current line');
     return;
   }
 
-  // Save the document first to ensure the module is up to date
-  await document.save();
+  const { name: exportName, needsExport, constPosition } = exportInfo;
+
+  // If export keyword is missing, add it first
+  if (needsExport) {
+    const insertPos = new vscode.Position(lineNumber, constPosition);
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(insertPos, 'export ');
+    });
+    // Save and reload text after adding export
+    await document.save();
+    text = document.getText();
+  } else {
+    // Save the document first to ensure the module is up to date
+    await document.save();
+  }
 
   // Load the module
   const module = await loadModule(document.fileName);

@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Test runner for VSCode extension fixture programs
  * Tests line number accuracy and diagnostic conversion

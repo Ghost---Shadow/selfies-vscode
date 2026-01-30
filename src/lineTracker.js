@@ -151,18 +151,26 @@ class LineTracker {
   }
 
   /**
-     * Find the export at a specific line
+     * Find the const declaration at a specific line
+     * Returns { name, needsExport, constPosition } or null
      */
-  _findExportAtLine(text, lineNumber) {
+  _findConstAtLine(text, lineNumber) {
     const lines = text.split('\n');
     const line = lines[lineNumber];
 
     if (!line) return null;
 
     // Match: export const NAME = ...
-    const match = line.match(/export\s+const\s+(\w+)\s*=/);
-    if (match) {
-      return match[1];
+    const exportMatch = line.match(/export\s+const\s+(\w+)\s*=/);
+    if (exportMatch) {
+      return { name: exportMatch[1], needsExport: false, constPosition: null };
+    }
+
+    // Match: const NAME = ... (without export)
+    const constMatch = line.match(/^(\s*)const\s+(\w+)\s*=/);
+    if (constMatch) {
+      const leadingWhitespace = constMatch[1].length;
+      return { name: constMatch[2], needsExport: true, constPosition: leadingWhitespace };
     }
 
     return null;
@@ -189,13 +197,27 @@ class LineTracker {
           return;
         }
 
-        // Find the export name at this line
+        // Find the const declaration at this line
         const text = this._currentDocument.getText();
-        const exportName = this._findExportAtLine(text, this._currentLine);
+        const constInfo = this._findConstAtLine(text, this._currentLine);
 
-        if (!exportName) {
+        if (!constInfo) {
           this._onDidChangeCurrentLine.fire(null);
           return;
+        }
+
+        const { name: exportName, needsExport, constPosition } = constInfo;
+
+        // If export is missing, add it automatically
+        if (needsExport) {
+          const editor = vscode.window.activeTextEditor;
+          if (editor && editor.document === this._currentDocument) {
+            const insertPos = new vscode.Position(this._currentLine, constPosition);
+            await editor.edit((editBuilder) => {
+              editBuilder.insert(insertPos, 'export ');
+            });
+            await this._currentDocument.save();
+          }
         }
 
         // Load the module and get the export
