@@ -113,12 +113,13 @@ class LineTracker {
 
   /**
      * Load and get exports from a smiles-js file
+     * Returns { module, error } object
      */
   async _loadSmilesModule(filePath) {
     // Check cache first
     const cacheKey = `${filePath}:${fs.statSync(filePath).mtimeMs}`;
     if (this._smilesModuleCache.has(cacheKey)) {
-      return this._smilesModuleCache.get(cacheKey);
+      return { module: this._smilesModuleCache.get(cacheKey), error: null };
     }
 
     try {
@@ -133,10 +134,19 @@ class LineTracker {
       this._smilesModuleCache.clear(); // Clear old cache
       this._smilesModuleCache.set(cacheKey, module);
 
-      return module;
+      return { module, error: null };
     } catch (err) {
-      // Failed to load module, return null
-      return null;
+      // Failed to load module, return the error with line number if available
+      this._smilesModuleCache.clear(); // Clear cache on error
+
+      // Try to extract line number from error stack or message
+      let errorMessage = err.message;
+      const lineMatch = err.stack?.match(/:(\d+):\d+/) || err.message?.match(/:(\d+):\d+/);
+      if (lineMatch) {
+        errorMessage = `Line ${lineMatch[1]}: ${err.message}`;
+      }
+
+      return { module: null, error: errorMessage };
     }
   }
 
@@ -189,7 +199,19 @@ class LineTracker {
         }
 
         // Load the module and get the export
-        const module = await this._loadSmilesModule(this._currentDocument.fileName);
+        const { module, error: loadError } = await this._loadSmilesModule(
+          this._currentDocument.fileName,
+        );
+
+        if (loadError) {
+          this._onDidChangeCurrentLine.fire({
+            line: this._currentLine,
+            name: exportName,
+            expression: lineText,
+            error: loadError,
+          });
+          return;
+        }
 
         if (!module || !module[exportName]) {
           this._onDidChangeCurrentLine.fire(null);
