@@ -35,7 +35,6 @@ export async function generateSVG(smiles, options = {}) {
     mol = rdkit.get_mol(smiles);
 
     if (!mol || !mol.is_valid()) {
-      console.error('[RDKit] Invalid molecule for SMILES:', smiles);
       throw new Error(`Invalid molecule for SMILES: ${smiles}`);
     }
 
@@ -49,7 +48,6 @@ export async function generateSVG(smiles, options = {}) {
     // console.log('[RDKit] Successfully rendered SMILES:', smiles);
     return svg;
   } catch (err) {
-    console.error('[RDKit] Error rendering SMILES:', smiles, 'Error:', err.message);
     throw new Error(`Failed to generate SVG for "${smiles}": ${err.message}`);
   } finally {
     // Clean up molecule object

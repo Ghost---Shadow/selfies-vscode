@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle, no-param-reassign, class-methods-use-this */
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -55,6 +56,9 @@ class PreviewPanel {
           case 'savePNG':
             await this._savePNG(message.pngData, message.fileName);
             break;
+          default:
+            // Unknown command
+            break;
         }
       },
       null,
@@ -88,9 +92,7 @@ class PreviewPanel {
         lineInfo.svg = svg;
         // console.log('[Panel] Successfully rendered with RDKit');
       } catch (err) {
-        console.error('[Panel] RDKit rendering failed for SMILES:', lineInfo.smiles);
-        console.error('[Panel] Error details:', err.message);
-        console.error('[Panel] Full error:', err);
+        // RDKit rendering failed
         lineInfo.rdkitError = err.message;
 
         // Check if it's a multi-substituted ring issue

@@ -1,8 +1,8 @@
+/* eslint-disable no-underscore-dangle, class-methods-use-this */
 import * as vscode from 'vscode';
 import {
   loadWithImports, resolve, decode, getMolecularWeight, getFormula,
 } from 'selfies-js';
-import * as path from 'path';
 import * as fs from 'fs';
 import { pathToFileURL } from 'url';
 
@@ -25,7 +25,8 @@ class LineTracker {
 
     // Listen for document changes
     this._documentChangeListener = vscode.workspace.onDidChangeTextDocument((event) => {
-      if (this._currentDocument && event.document.uri.toString() === this._currentDocument.uri.toString()) {
+      const currentUri = this._currentDocument?.uri.toString();
+      if (currentUri && event.document.uri.toString() === currentUri) {
         this._handleDocumentChange(event.document);
       }
     });
@@ -54,11 +55,12 @@ class LineTracker {
     });
 
     // Initialize with current editor
-    if (vscode.window.activeTextEditor && this._isSupportedFile(vscode.window.activeTextEditor.document)) {
-      this._currentDocument = vscode.window.activeTextEditor.document;
+    const { activeTextEditor } = vscode.window;
+    if (activeTextEditor && this._isSupportedFile(activeTextEditor.document)) {
+      this._currentDocument = activeTextEditor.document;
       this._handleSelectionChange({
-        textEditor: vscode.window.activeTextEditor,
-        selections: vscode.window.activeTextEditor.selections,
+        textEditor: activeTextEditor,
+        selections: activeTextEditor.selections,
       });
     }
   }
@@ -133,7 +135,7 @@ class LineTracker {
 
       return module;
     } catch (err) {
-      console.error('Failed to load smiles module:', err);
+      // Failed to load module, return null
       return null;
     }
   }

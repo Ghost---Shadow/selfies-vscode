@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { createDiagnosticsProvider } from './diagnostics';
+import { createRoundTripDiagnosticsProvider } from './roundtripDiagnostics';
 import { LineTracker } from './lineTracker';
 import { PreviewPanel } from './webview/panel';
 import { initRDKit } from './rdkitRenderer';
@@ -10,14 +11,17 @@ import { initRDKit } from './rdkitRenderer';
  */
 export function activate(context) {
   // Initialize RDKit asynchronously
-  initRDKit().catch((err) => {
-    console.error('Failed to initialize RDKit:', err);
+  initRDKit().catch(() => {
     vscode.window.showWarningMessage('SELFIES: RDKit initialization failed, using fallback renderer');
   });
 
   // Create diagnostics provider
   const diagnosticsProvider = createDiagnosticsProvider();
   context.subscriptions.push(diagnosticsProvider);
+
+  // Create round-trip diagnostics provider for SMILES validation
+  const roundTripDiagnosticsProvider = createRoundTripDiagnosticsProvider();
+  context.subscriptions.push(roundTripDiagnosticsProvider);
 
   // Create line tracker for cursor position
   const lineTracker = new LineTracker();
